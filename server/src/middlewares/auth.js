@@ -1,0 +1,33 @@
+const jwt = require("jsonwebtoken");
+const { APP_KEY } = process.env;
+const userModel = require("../models/users");
+const Response = require("../helpers/response");
+
+exports.authCheck = (req, res, next) => {
+	const { authorization } = req.headers;
+	try {
+		if (authorization && authorization.startsWith("Bearer")) {
+			const token = authorization.substr(7);
+			const data = jwt.verify(token, APP_KEY);
+			if (data) {
+				req.userData = data;
+				return next();
+			}
+		}
+		return Response.responseStatus(res, 401, "Authorization needed");
+	} catch (error) {
+		return Response.responseStatus(res, 401, "Invalid Authorization");
+	}
+};
+
+exports.authType = (types) => {
+	return async (req, res, next) => {
+		const data = req.userData;
+		const userRole = await userModel.getUsersByCondition({user_id:data.user_id});
+		if (userRole[0].user_type === types) {
+			return next();
+		} else {
+			return Response.responseStatus(res, 403, "You don't have permission");
+		}
+	};
+};
