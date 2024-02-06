@@ -11,6 +11,7 @@
   "author": "Murugesh Kumar V",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "connect-history-api-fallback": "^2.0.0",
@@ -22,7 +23,8 @@
     "mysql2": "^3.8.0",
     "nodemailer": "^6.9.8",
     "path": "^0.12.7",
-    "randomstring": "^1.3.0"
+    "randomstring": "^1.3.0",
+    "vcards-js": "^2.10.0"
   },
   "devDependencies": {
     "dotenv": "^16.4.1",

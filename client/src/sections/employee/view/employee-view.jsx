@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { Box, Button, Card, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, IconButton, Card, Container, Stack, Typography,Link } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Unstable_Grid2';
 import { alpha } from '@mui/material/styles';
+import { useSnackbar } from 'notistack';
 import { useRouter } from 'src/routes/hooks';
 import Iconify from 'src/components/iconify';
 import html2canvas from 'html2canvas';
@@ -14,6 +15,7 @@ import axios from 'axios';
 export default function EmployeeView() {
   const { employeeId } = useParams();
   const router = useRouter();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const qrRef = useRef(null);
 
   const [employee, setEmployee] = useState({
@@ -43,10 +45,8 @@ export default function EmployeeView() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`/api/employees/${employeeId}`);
-        console.log(response);
         if (response.data.status) {
           setEmployee(response.data.results[0]);
-          console.log(response.data.results);
         }
       } catch (error) {
         console.error('Error fetching employee data:', error);
@@ -56,6 +56,31 @@ export default function EmployeeView() {
 
     fetchData();
   }, [employeeId]);
+
+  const action = useCallback(
+    (snackbarId) => (
+      <IconButton color="inherit" onClick={() => closeSnackbar(snackbarId)}>
+        <Iconify icon="eva:close-outline" />
+      </IconButton>
+    ),
+    [closeSnackbar]
+  );
+
+  const handleClickActiveChange = () =>{
+    try {
+      axios.patch(`/api/employees/${employeeId}?active=${employee.is_active?'0':'1'}`).then((response)=>{
+        if(response.data.status){
+          enqueueSnackbar(response.data.message, { variant: 'success', action });
+          router.push('/employees/list');
+          // setRefresh((prev)=>prev+1);
+        }
+      }).catch((error)=>{
+        enqueueSnackbar(error.response.data.message, { variant: 'error', action })
+      })
+    } catch (error) {
+      enqueueSnackbar(error.message, { variant: 'error', action });
+    }
+  }
 
   const downloadQRCode = () => {
     if (!qrRef.current) return;
@@ -74,51 +99,79 @@ export default function EmployeeView() {
 
   const renderLogo = (
     <Box
+    display='flex'
+    justifyContent='center'
+    alignItems='center'
+    sx={{
+      // zIndex: 9,
+      verticalAlign:"middle"
+    }}
+    >
+          <Box
       component="img"
       alt="Company Logo"
       src={employee.company.company_logo}
       sx={{
-        zIndex: 9,
-        top: 50,
-        left: 150,
-        // width: 150,
-        // height: 150,
-        position: 'absolute',
+        
+        // top: 30,
+        // left: 150,
+        overflow: 'hidden',
+        // position: 'absolute',
+        verticalAlign: 'bottom',
+        display: 'inline-block',
+        height: '50px',
       }}
+      // sx={{
+
+      //   // width: 150,
+      //   // height: 150,
+      //   position: 'absolute',
+      // }}
     />
+    </Box>
   );
 
   const renderAvatar = (
+    <Box
+    sx={{
+      zIndex: 9,
+      mt:7,
+      // top: 150,
+      // left: 150,
+      // position: 'absolute',
+      display:'flex',
+      justifyContent:'center',
+      alignItems:'center',
+      // left: (theme) => theme.spacing(3),
+      // bottom: (theme) => theme.spacing(-2),
+      // ...((latestPostLarge || latestPost) && {
+      //   zIndex: 9,
+      //   top: 24,
+      //   left: 24,
+      //   width: 40,
+      //   height: 40,
+      // }),
+    }}
+    >
     <Avatar
       alt={employee.employee_name}
       src={employee.photo}
       sx={{
-        zIndex: 9,
-        top: 120,
-        left: 150,
         width: 150,
         height: 150,
-        position: 'absolute',
-        // left: (theme) => theme.spacing(3),
-        // bottom: (theme) => theme.spacing(-2),
-        // ...((latestPostLarge || latestPost) && {
-        //   zIndex: 9,
-        //   top: 24,
-        //   left: 24,
-        //   width: 40,
-        //   height: 40,
-        // }),
       }}
     />
+    </Box>
   );
 
   const renderName = (
+    <Box>
     <Typography
-      variant="h3"
-      component="div"
+      variant="h4"
+      // component="div"
       sx={{
+        mt:2,
         textAlign: 'center',
-        mb: 2,
         color: 'comman.black',
         // ...((latestPostLarge || latestPost) && {
         //   // opacity: 0.48,
@@ -128,6 +181,36 @@ export default function EmployeeView() {
     >
       {employee.employee_name}
     </Typography>
+
+<Typography
+variant="h5"
+// component="div"
+sx={{
+  textAlign: 'center',
+  color: 'comman.black',
+  // ...((latestPostLarge || latestPost) && {
+  //   // opacity: 0.48,
+  //   color: 'common.black',
+  // }),
+}}
+>
+{employee.designation}
+</Typography>
+    <Typography
+    variant="h5"
+    // component="div"
+    sx={{
+      textAlign: 'center',
+      color: 'comman.black',
+      // ...((latestPostLarge || latestPost) && {
+      //   // opacity: 0.48,
+      //   color: 'common.black',
+      // }),
+    }}
+  >
+    {employee.company.company_name}
+  </Typography>
+  </Box>
   );
 
   const renderCover = (
@@ -143,6 +226,142 @@ export default function EmployeeView() {
         position: 'absolute',
       }}
     />
+  );
+
+  const renderDate = (
+    <Typography
+      variant="caption"
+      component="div"
+      sx={{
+        mb: 2,
+        // color: 'text.disabled',
+        // ...((latestPostLarge || latestPost) && {
+          opacity: 0.48,
+          color: 'common.black',
+        // }),
+      }}
+    >
+      Hello
+    </Typography>
+  );
+
+  const renderLinks = (
+    <Stack
+      spacing={2}
+      sx={{
+        mt:5,
+        color: 'common.black',
+      }}
+    >
+
+      <Stack direction="row">
+      <Iconify width={24} icon="ri:whatsapp-fill" sx={{ mr: 1.5 }} />
+        <Link
+    href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
+      color="inherit"
+      variant="subtitle2"
+      underline="hover"
+      target="_blank"      // Open in a new tab
+      rel="noopener noreferrer" 
+      sx={{
+        // height: 44,
+        overflow: 'hidden',
+        WebkitLineClamp: 2,
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        typography: 'subtitle2', 
+        // height: 60, 
+        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+        // ...((latestPostLarge || latestPost) && {
+        // }),
+      }}
+    >
+      WhatsApp me
+    </Link>
+    </Stack>
+
+    <Stack direction="row">
+    <Iconify width={24} icon="ic:round-email" sx={{ mr: 1.5 }} />
+    <Link
+    href={`mailto:${employee.email}`}
+      color="inherit"
+      variant="subtitle2"
+      underline="hover"
+      target="_blank"      // Open in a new tab
+      rel="noopener noreferrer" 
+      sx={{
+        // height: 44,
+        overflow: 'hidden',
+        WebkitLineClamp: 2,
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        typography: 'subtitle2', 
+        // height: 60, 
+        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+        // ...((latestPostLarge || latestPost) && {
+          color: 'common.black',
+        // }),
+      }}
+    >
+      Email me
+    </Link>
+    </Stack>
+
+    <Stack direction="row">
+    <Iconify width={24} icon="fluent:globe-search-24-filled" sx={{ mr: 1.5}} />
+    <Link
+    href={employee.company.company_website}
+      color="inherit"
+      variant="subtitle2"
+      underline="hover"
+      target="_blank"      // Open in a new tab
+      rel="noopener noreferrer" 
+      sx={{
+        // height: 44,
+        overflow: 'hidden',
+        WebkitLineClamp: 2,
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        typography: 'subtitle2', 
+        // height: 60, 
+        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+        // ...((latestPostLarge || latestPost) && {
+          color: 'common.black',
+        // }),
+      }}
+    >
+      {employee.company.company_website.replace(/^https?:\/\//, '')}
+    </Link>
+    </Stack>
+
+    <Stack direction="row">
+    <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
+    <Link
+    href={employee.branch.google_map_link}
+      color="inherit"
+      variant="subtitle2"
+      underline="hover"
+      target="_blank"      // Open in a new tab
+      rel="noopener noreferrer" 
+      sx={{
+        // height: 44,
+        overflow: 'hidden',
+        WebkitLineClamp: 2,
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        typography: 'subtitle2', 
+        // height: 60, 
+        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+        // ...((latestPostLarge || latestPost) && {
+          color: 'common.black',
+        // }),
+      }}
+    >
+      {employee.branch.branch_address}
+    </Link>
+</Stack>
+
+    </Stack>
   );
 
   return (
@@ -198,21 +417,29 @@ export default function EmployeeView() {
                 // }),
               }}
             >
-              {renderLogo}
-              {renderAvatar}
+              {/* {renderLogo}
+              {renderAvatar} */}
               {renderCover}
+              </Box>
+
               <Box
                 sx={{
-                  p: (theme) => theme.spacing(4, 3, 3, 3),
+                  p: (theme) => theme.spacing(4),
                   // ...((latestPostLarge || latestPost) && {
                   width: 1,
-                  bottom: 0,
+                  bottom: 25,
                   position: 'absolute',
                   // }),
                 }}
               >
+                {renderLogo}
+
+                {renderAvatar}
+
                 {renderName}
-              </Box>
+
+                {renderLinks}
+                
             </Box>
           </Card>
         </Grid>
@@ -231,9 +458,9 @@ export default function EmployeeView() {
             sx={{border:'3px solid black',borderRadius:3,p:1}}>
               <QRCode
                 value={`http:localhost:3030/vcard/${employeeId}`}
-                logoImage="/assets/Refex-Logo.png"
-                logoWidth={72}
-                logoHeight={22}
+                logoImage={employee.company.company_logo}
+                // logoWidth={50}
+                // logoHeight={50}
                 size={200}
                 qrStyle="dots"
                 eyeRadius={10}
@@ -285,9 +512,7 @@ export default function EmployeeView() {
               </Button>
 
               <Button
-                onClick={() => {
-                  router.push('/employees/list');
-                }}
+                onClick={handleClickActiveChange}
                 // href="/employees/list"
                 variant="contained"
                 color="error"

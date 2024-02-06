@@ -29,4 +29,8 @@ router
 .delete(auth.authCheck,EmployeeController.deleteEmployeeByEmployeeId)
 .patch(auth.authCheck,EmployeeController.updateActiveEmployeeByEmployeeId);
 
+router.route("/vcard/:employee_id").get(EmployeeController.getEmployeeByEmployeeIdWithMappedData);
+
+router.route("/download-vcard/:employee_id").get(EmployeeController.getVCardByEmployeeId);
+
 module.exports = router;

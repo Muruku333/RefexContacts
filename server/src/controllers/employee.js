@@ -1,5 +1,7 @@
 const EmployeeModel = require("../models/employee");
-const qs=require("querystring");
+const qs = require("querystring");
+const fs = require("fs");
+const vCardsJS = require('vcards-js');
 const Response = require("../helpers/response");
 const { validationResult } = require("express-validator");
 const { APP_URL, LIMIT_DATA } = process.env;
@@ -36,7 +38,7 @@ const EmployeeController = {
         company_id: companyId,
         branch_id: branchId,
         created_by: createdBy,
-        modified_by: createdBy
+        modified_by: createdBy,
       };
       const result = await EmployeeModel.createEmployee(employee_data);
       if (result.insertId > 0) {
@@ -65,7 +67,7 @@ const EmployeeController = {
       cond.offset = (cond.page - 1) * cond.limit;
       cond.sort = cond.sort || "ep.id";
       cond.order = cond.order || "ASC";
-    
+
       const pageInfo = {
         nextLink: null,
         prevLink: null,
@@ -122,20 +124,22 @@ const EmployeeController = {
           employeeData = [
             ...employeeData,
             {
-              id:ep_id,
+              id: ep_id,
               employee_id,
               employee_name,
               designation,
               mobile_number,
               landline,
               email,
-              photo:photo?Buffer.from(photo, 'binary').toString():null,
+              photo: photo ? Buffer.from(photo, "binary").toString() : null,
               is_active,
               company: {
                 company_id: company_id,
                 company_name,
                 company_website,
-                company_logo,
+                company_logo: company_logo
+                  ? Buffer.from(company_logo, "binary").toString()
+                  : null,
               },
               branch: {
                 branch_id: branch_id,
@@ -162,72 +166,74 @@ const EmployeeController = {
     }
   },
 
-  getAllInActiveEmployeesWithMappedData: async(req,res)=>{
+  getAllInActiveEmployeesWithMappedData: async (req, res) => {
     try {
-        const rows = await EmployeeModel.getAllInActiveEmployeesWithMappedData();
-        if (rows.length > 0) {
-          let employeeData = [];
-          rows.map((row) => {
-            const {
-              ep_id,
+      const rows = await EmployeeModel.getAllInActiveEmployeesWithMappedData();
+      if (rows.length > 0) {
+        let employeeData = [];
+        rows.map((row) => {
+          const {
+            ep_id,
+            employee_id,
+            employee_name,
+            designation,
+            mobile_number,
+            landline,
+            email,
+            photo,
+            is_active,
+            company_id,
+            branch_id,
+            company_name,
+            company_website,
+            company_logo,
+            branch_name,
+            branch_address,
+            google_map_link,
+          } = row;
+
+          employeeData = [
+            ...employeeData,
+            {
+              id: ep_id,
               employee_id,
               employee_name,
               designation,
               mobile_number,
               landline,
               email,
-              photo,
+              photo: photo ? Buffer.from(photo, "binary").toString() : null,
               is_active,
-              company_id,
-              branch_id,
-              company_name,
-              company_website,
-              company_logo,
-              branch_name,
-              branch_address,
-              google_map_link,
-            } = row;
-  
-            employeeData = [
-              ...employeeData,
-              {
-                id:ep_id,
-                employee_id,
-                employee_name,
-                designation,
-                mobile_number,
-                landline,
-                email,
-                photo:photo?Buffer.from(photo, 'binary').toString():null,
-                is_active,
-                company: {
-                  company_id: company_id,
-                  company_name,
-                  company_website,
-                  company_logo,
-                },
-                branch: {
-                  branch_id: branch_id,
-                  branch_name,
-                  branch_address,
-                  google_map_link,
-                },
+              company: {
+                company_id: company_id,
+                company_name,
+                company_website,
+                company_logo: company_logo
+                  ? Buffer.from(company_logo, "binary").toString()
+                  : null,
               },
-            ];
-          });
-          return Response.responseStatus(
-            res,
-            200,
-            "List of all Inactive Employees ",
-            employeeData
-          );
-        }
-        return Response.responseStatus(res, 400, "No data found");
-      } catch (error) {
-        return Response.responseStatus(res, 500, "Internal server error", {
-          error: error.message,
+              branch: {
+                branch_id: branch_id,
+                branch_name,
+                branch_address,
+                google_map_link,
+              },
+            },
+          ];
         });
+        return Response.responseStatus(
+          res,
+          200,
+          "List of all Inactive Employees ",
+          employeeData
+        );
       }
+      return Response.responseStatus(res, 400, "No data found");
+    } catch (error) {
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
   },
 
   getEmployeeByEmployeeIdWithMappedData: async (req, res) => {
@@ -268,13 +274,15 @@ const EmployeeController = {
             mobile_number,
             landline,
             email,
-            photo:photo?Buffer.from(photo, 'binary').toString():null,
+            photo: photo ? Buffer.from(photo, "binary").toString() : null,
             is_active,
             company: {
               company_id: company_id,
               company_name,
               company_website,
-              company_logo,
+              company_logo: company_logo
+                ? Buffer.from(company_logo, "binary").toString()
+                : null,
             },
             branch: {
               branch_id: branch_id,
@@ -380,7 +388,7 @@ const EmployeeController = {
         employee_id: employeeId,
         employee_name: employeeName,
         designation,
-        mobile_number:mobileNumber,
+        mobile_number: mobileNumber,
         landline,
         email,
         photo,
@@ -399,7 +407,11 @@ const EmployeeController = {
           "Employee Data updated successfully"
         );
       }
-      return Response.responseStatus(res, 400, `Failed to update Employee Data`);
+      return Response.responseStatus(
+        res,
+        400,
+        `Failed to update Employee Data`
+      );
     } catch (error) {
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
@@ -407,30 +419,35 @@ const EmployeeController = {
     }
   },
 
-  updateActiveEmployeeByEmployeeId: async(req,res)=>{
+  updateActiveEmployeeByEmployeeId: async (req, res) => {
     try {
-        const employee_id = req.params.employee_id;
-        const active = req.query.active;
-        
-        const update ={
-            is_active:+active,
-        }
+      const employee_id = req.params.employee_id;
+      const active = req.query.active;
 
-        const result = await EmployeeModel.updateEmployeeByCondition({employee_id },update);
-        
-        if (result.affectedRows > 0) {
-          return Response.responseStatus(
-            res,
-            200,
-            `Employee ${Boolean(update.is_active)?'activated':'deactived'} successfully`
-          );
-        }
-        return Response.responseStatus(res, 404, `Failed to update employee`);
-      } catch (error) {
-        return Response.responseStatus(res, 500, "Internal server error", {
-          error: error.message,
-        });
+      const update = {
+        is_active: +active,
+      };
+
+      const result = await EmployeeModel.updateEmployeeByCondition(
+        { employee_id },
+        update
+      );
+
+      if (result.affectedRows > 0) {
+        return Response.responseStatus(
+          res,
+          200,
+          `Employee ${
+            Boolean(update.is_active) ? "activated" : "deactived"
+          } successfully`
+        );
       }
+      return Response.responseStatus(res, 404, `Failed to update employee`);
+    } catch (error) {
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
   },
 
   deleteEmployeeById: async (req, res) => {
@@ -444,7 +461,11 @@ const EmployeeController = {
           `Employee Data deleted successfully`
         );
       }
-      return Response.responseStatus(res, 404, `Failed to delete Employee Data`);
+      return Response.responseStatus(
+        res,
+        404,
+        `Failed to delete Employee Data`
+      );
     } catch (error) {
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
@@ -465,8 +486,117 @@ const EmployeeController = {
           `Employee Data deleted successfully`
         );
       }
-      return Response.responseStatus(res, 404, `Failed to delete Employee Data`);
+      return Response.responseStatus(
+        res,
+        404,
+        `Failed to delete Employee Data`
+      );
     } catch (error) {
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+
+  getVCardByEmployeeId: async (req, res) => {
+    try {
+      const employee_id = req.params.employee_id;
+
+      const rows = await EmployeeModel.getEmployeeByEmployeeIdWithMappedData(
+        employee_id
+      );
+
+     
+
+      if (rows.length > 0) {
+
+
+        const {
+          id,
+          employee_id,
+          employee_name,
+          designation,
+          mobile_number,
+          landline,
+          email,
+          photo,
+          is_active,
+          company_id,
+          branch_id,
+          company_name,
+          company_website,
+          company_logo,
+          branch_name,
+          branch_address,
+          google_map_link,
+        } = rows[0]; // Note the change here, using rows[0] to get the first row
+
+        // const employeeData = [
+        //   {
+        //     id,
+        //     employee_id,
+        //     employee_name,
+        //     designation,
+        //     mobile_number,
+        //     landline,
+        //     email,
+        //     photo:photo?Buffer.from(photo, 'binary').toString():null,
+        //     is_active,
+        //     company: {
+        //       company_id: company_id,
+        //       company_name,
+        //       company_website,
+        //       company_logo:company_logo?Buffer.from(company_logo, 'binary').toString():null,
+        //     },
+        //     branch: {
+        //       branch_id: branch_id,
+        //       branch_name,
+        //       branch_address,
+        //       google_map_link,
+        //     },
+        //   },
+        // ];
+        // Create a new vCard
+        const vCard = vCardsJS();
+        vCard.firstName = employee_name;
+        vCard.email = email;
+        vCard.cellPhone = mobile_number;
+
+        // vCard.saveToFile(`${employee_name}_${Date.now()}.vcf`);
+
+        // Convert vCard to a string
+        const vCardString = vCard.getFormattedString();
+
+        // Create a unique filename for the downloaded vCard
+        const fileName = `${employee_name}.vcf`;
+
+        // Write the vCard string to a file
+        fs.writeFileSync(fileName, vCardString);
+
+        // Set response headers for downloading the file
+        res.setHeader("Content-Type", "text/vcard");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename=${fileName}`
+        );
+
+        // Stream the file to the response
+        const fileStream = fs.createReadStream(fileName);
+        fileStream.pipe(res);
+
+        // Remove the file after streaming
+        fileStream.on("end", () => {
+          fs.unlinkSync(fileName);
+        });
+      }else{
+        return Response.responseStatus(
+          res,
+          400,
+          `No data found for ${employee_id}`
+        );
+      }
+    } catch (error) {
+      console.log(error.message);
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
       });

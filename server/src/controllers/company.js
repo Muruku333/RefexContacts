@@ -103,11 +103,24 @@ const CompanyController = {
       const results = await CompanyModel.listCompanies(cond);
 
       if (results.length > 0) {
+
+        let companyData=[];
+      
+        results.map((row)=>{
+          companyData=[
+            ...companyData,
+            {
+              ...row,
+              company_logo:row.company_logo?Buffer.from(row.company_logo, 'binary').toString():null,
+            }
+          ]
+        })
+
         return Response.responseStatus(
           res,
           200,
           "List of all Companies",
-          results,
+          companyData,
           pageInfo
         );
       }

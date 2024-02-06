@@ -268,7 +268,7 @@ export default function EmployeeEdit(){
             if(changeMade){
               handleClickAlert();
             }else{
-              router.back();
+              router.push('/employees/list');
             }
           }}
             // href="/employees/list"

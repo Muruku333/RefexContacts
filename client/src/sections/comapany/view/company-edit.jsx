@@ -28,6 +28,7 @@ import { useAuth } from 'src/context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
+import { useParams } from 'react-router-dom';
 
 const PhotoBox = styled(Box)(({ theme }) => ({
   width: 250,
@@ -61,17 +62,19 @@ const PhotoStack = styled(Stack)(({ theme, isError, selectedPhoto }) => ({
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
-export default function CompanyCreate() {
+export default function CompanyEdit() {
+  const { companyId } = useParams();
+
   const { user } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const fileInputRef = useRef(null);
   const router = useRouter();
 
   const [companyData, setCompanyData] = useState({
-    companyName: null,
-    companyWebSite: null,
+    companyName: "",
+    companyWebSite: "null",
     companyLogo: null,
-    createdBy: user.user_id,
+    modifiedBy: user.user_id,
   });
   const [companyBranches, setCompanyBranches] = useState([
     {
@@ -85,6 +88,65 @@ export default function CompanyCreate() {
   const [validationErrors, setValidationErrors] = useState({});
   const [changeMade, setChangeMade] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/companies/${companyId}`);
+        console.log(response);
+        if (response.data.status) {
+          const {
+            company_name,
+            company_website,
+            company_logo,
+            company_branches = [],
+          } = response.data.results[0];
+          setCompanyData((prev) => ({
+            ...prev,
+            companyName: company_name,
+            companyWebSite: company_website,
+            companyLogo: company_logo,
+          }));
+          let branches = [];
+        //   company_branches.map((branch) => {
+
+        //     branches = [
+        //       ...branches,
+        //       {
+        //         companyBranchName: branch.branch_name,
+        //         companyBranchAddress: branch.branch_address,
+        //         googleMapLink: branch.google_map_link,
+        //       },
+        //     ];
+        //   });
+        for(let i=0;i<company_branches.length;i += 1){
+            branches = [
+                ...branches,
+                {
+                    companyBranchName:company_branches[i].branch_name,
+                    companyBranchAddress:company_branches[i].branch_address,
+                    googleMapLink:company_branches[i].google_map_link
+                }
+            ]
+        }
+
+          setCompanyBranches(branches);
+        } else {
+          setCompanyData({});
+          setCompanyBranches([
+            {
+              companyBranchName: '',
+              companyBranchAddress: '',
+              googleMapLink: '',
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+    fetchData();
+  }, [companyId]);
 
   const handleInputChange = (field, value) => {
     const updatedcompanyData = { ...companyData };
@@ -109,15 +171,15 @@ export default function CompanyCreate() {
     setCompanyBranches((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const clearAllBranches = () =>{
+  const clearAllBranches = () => {
     setCompanyBranches([
-        {
-            companyBranchName: '',
-            companyBranchAddress: '',
-            googleMapLink: '',
-        }
-    ])
-  }
+      {
+        companyBranchName: '',
+        companyBranchAddress: '',
+        googleMapLink: '',
+      },
+    ]);
+  };
 
   const handleInputChangeBranch = (index, field, value) => {
     const updatedCompanyBranches = [...companyBranches];
@@ -176,7 +238,7 @@ export default function CompanyCreate() {
     }
     try {
       await axios
-        .post(`/api/companies`, {...companyData,companyBranches})
+        .put(`/api/companies/${companyId}`, { ...companyData, companyBranches })
         .then((response) => {
           console.log(response);
           if (response.data.status) {
@@ -205,7 +267,7 @@ export default function CompanyCreate() {
   return (
     <Container maxWidth="xl">
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Create a new Company</Typography>
+        <Typography variant="h4">Edit Company</Typography>
 
         <Stack direction="row" alignItems="center" gap={3}>
           <Button
@@ -213,7 +275,7 @@ export default function CompanyCreate() {
               if (changeMade) {
                 handleClickAlert();
               } else {
-                router.back();
+                router.push('/companies/list');
               }
             }}
             // href="/employees/list"
@@ -253,7 +315,7 @@ export default function CompanyCreate() {
                         position: 'relative',
                       }}
                     >
-                      {selectedPhoto && (
+                      {companyData.companyLogo && (
                         <Box
                           component="img"
                           // alt="Crew Photo"
@@ -272,7 +334,7 @@ export default function CompanyCreate() {
                       <PhotoStack
                         gap={1}
                         className="upload-placeholder"
-                        selectedPhoto={selectedPhoto}
+                        selectedPhoto={companyData.companyLogo}
                         isError={Boolean(validationErrors.companyLogo)}
                       >
                         <Iconify icon="solar:gallery-add-bold-duotone" width={42} />
@@ -321,7 +383,7 @@ export default function CompanyCreate() {
                       fullWidth
                       required
                       label="Company Name"
-                      //   value={companyData.companyName}
+                        value={companyData.companyName}
                       onChange={(event) => {
                         handleInputChange('companyName', event.target.value);
                       }}
@@ -334,7 +396,7 @@ export default function CompanyCreate() {
                       required
                       label="Company Website"
                       placeholder="Ex: https://google.com"
-                      //   value={companyData.companyWebSite}
+                        value={companyData.companyWebSite}
                       onChange={(event) => {
                         handleInputChange('companyWebSite', event.target.value);
                       }}
@@ -444,7 +506,7 @@ export default function CompanyCreate() {
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>
                     <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
-                      Create Employee
+                      Update Employee
                     </Button>
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>

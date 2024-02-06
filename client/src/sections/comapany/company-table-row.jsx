@@ -80,13 +80,13 @@ export default function CompanyTableRow({
           <Checkbox disableRipple checked={selected} onChange={handleClick} />
         </TableCell>
 
-        <TableCell component="th" scope="row" padding="none">
-          <Box component='img' alt={`${companyName} Logo`} src={companyLogo}/>
+        <TableCell align='center' component="th" scope="row" padding="none">
+          <Box component='img' alt={`${companyName} Logo`} src={companyLogo} height={50}/>
         </TableCell>
 
-        <TableCell>{companyName}</TableCell>
+        <TableCell align='center'>{companyName}</TableCell>
 
-        <TableCell>{companyWebsite}</TableCell>
+        <TableCell align='center'>{companyWebsite}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={(event)=>{handleOpenMenu(event)}}>

@@ -175,9 +175,9 @@ export default function CompanyList() {
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
-                  { id: 'company_logo', label: 'Company Logo' },
-                  { id: 'company_name', label: 'Company Name' },
-                  { id: 'company_website', label: 'Company Website' },
+                  { id: 'company_logo', label: 'Company Logo',align: 'center' },
+                  { id: 'company_name', label: 'Company Name',align: 'center' },
+                  { id: 'company_website', label: 'Company Website',align: 'center' },
                   { id: '' },
                 ]}
               />

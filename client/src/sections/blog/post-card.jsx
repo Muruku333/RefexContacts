@@ -50,6 +50,7 @@ export default function PostCard({ post, index }) {
     <Link
       color="inherit"
       variant="subtitle2"
+      
       underline="hover"
       sx={{
         height: 44,
