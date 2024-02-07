@@ -28,6 +28,7 @@ app.use(
     require("./src/routes/auth.js"),
     require("./src/routes/users.js"),
     require("./src/routes/employee.js"),
+    // require("./src/routes/downloads.js"),
     require("./src/routes/company.js"),
     // require("./src/routes/company_branches.js")
   );
