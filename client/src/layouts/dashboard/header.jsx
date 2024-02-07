@@ -26,6 +26,7 @@ import NotificationsPopover from './common/notifications-popover';
 const Pages = [
   { title: 'Employees', path: '/employees' },
   { title: 'Companies', path: '/companies' },
+  { title: 'Downloads', path: '/downloads'},
 ];
 
 // ----------------------------------------------------------------------

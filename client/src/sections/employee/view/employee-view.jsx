@@ -459,8 +459,8 @@ sx={{
               <QRCode
                 value={`http:localhost:3030/vcard/${employeeId}`}
                 logoImage={employee.company.company_logo}
-                // logoWidth={50}
-                // logoHeight={50}
+                logoWidth={60}
+                logoHeight={50}
                 size={200}
                 qrStyle="dots"
                 eyeRadius={10}

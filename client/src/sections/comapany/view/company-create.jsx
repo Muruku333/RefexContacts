@@ -237,7 +237,7 @@ export default function CompanyCreate() {
                     <input
                       ref={fileInputRef}
                       onChange={handleFileChange}
-                      accept="image/*"
+                      accept="image/png"
                       type="file"
                       tabIndex={-1}
                       style={{ display: 'none' }}
@@ -305,7 +305,7 @@ export default function CompanyCreate() {
                         </Box>
                       )}
                       <Typography display="block" textAlign="center" variant="caption">
-                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                        Allowed *.png
                         <br />
                         max size of 3.1 MB
                       </Typography>

@@ -78,6 +78,7 @@ export default function CompanyEdit() {
   });
   const [companyBranches, setCompanyBranches] = useState([
     {
+      branchId:'',
       companyBranchName: '',
       companyBranchAddress: '',
       googleMapLink: '',
@@ -123,6 +124,7 @@ export default function CompanyEdit() {
             branches = [
                 ...branches,
                 {
+                    branchId:company_branches[i].branch_id,
                     companyBranchName:company_branches[i].branch_name,
                     companyBranchAddress:company_branches[i].branch_address,
                     googleMapLink:company_branches[i].google_map_link
@@ -299,7 +301,7 @@ export default function CompanyEdit() {
                     <input
                       ref={fileInputRef}
                       onChange={handleFileChange}
-                      accept="image/*"
+                      accept="image/png"
                       type="file"
                       tabIndex={-1}
                       style={{ display: 'none' }}
@@ -367,7 +369,7 @@ export default function CompanyEdit() {
                         </Box>
                       )}
                       <Typography display="block" textAlign="center" variant="caption">
-                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                        Allowed *.png
                         <br />
                         max size of 3.1 MB
                       </Typography>
@@ -506,7 +508,7 @@ export default function CompanyEdit() {
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>
                     <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
-                      Update Employee
+                      Update Company
                     </Button>
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>

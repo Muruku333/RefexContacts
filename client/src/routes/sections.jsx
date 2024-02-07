@@ -83,6 +83,10 @@ export default function Router() {
           ],
         },
         {
+          path: 'downloads',
+          element: <IndexPage />,
+        },
+        {
           path: 'change_password',
           element: <IndexPage />,
         },
@@ -96,10 +100,10 @@ export default function Router() {
       path: 'vcard/:employeeId',
       element: <EmployeeVCard/>,
     },
-    {
-      path:'blog',
-      element:<BlogPage/>,
-    },
+    // {
+    //   path:'blog',
+    //   element:<BlogPage/>,
+    // },
     {
       path: 'login',
       element: isAuthenticated ? <Navigate to="/employees" replace /> : <LoginPage />,

@@ -53,9 +53,56 @@ export default function EmployeeVCard(){
 
       const handleClickSave = async () => {
         try {
-            await axios.get(`/api/download-vcard/${employeeId}`);
+            // Make a GET request to the Express endpoint to fetch the vCard
+            const response = await axios.get(`/api/download-vcard/${employeeId}`, {
+              responseType: 'blob', // Set the responseType to 'blob' to handle binary data
+            });
+      
+            // Check if the response is successful (status code 200)
+            if (response.status === 200) {
+              // Create a Blob from the response data
+              const blob = new Blob([response.data], { type: 'text/vcard' });
+      
+              // Create a temporary anchor element
+              const link = document.createElement('a');
+      
+              // Set the download attribute with the desired file name
+              link.download = `${employee.employee_name}.vcf`;
+      
+              // Create a Blob URL from the blob and set it as the href
+              link.href = window.URL.createObjectURL(blob);
+      
+              // Append the link to the body
+              document.body.appendChild(link);
+      
+              // Trigger a click on the link to start the download
+              link.click();
+      
+              // Remove the link from the DOM
+              document.body.removeChild(link);
+            } else {
+              console.error('Failed to download vCard:', response.status, response.statusText);
+            }
           } catch (error) {
-            console.error('Error fetching employee data:', error);
+            console.error('Error fetching vCard:', error);
+          }
+      }
+
+      const handleClickShare = async ()=>{
+        try {
+            // Check if the share API is supported in the browser
+            if (navigator.share) {
+              await navigator.share({
+                title: 'Refex Contacts',
+                text: 'Check out this link!',
+                url: `/vcard/${employeeId}`, // Replace with your desired URL
+              });
+            } else {
+              console.error('Share API not supported in this browser');
+              // Optionally, you can provide a fallback behavior for browsers that don't support the Share API
+            }
+          } catch (error) {
+            console.error('Error sharing:', error);
           }
       }
 
@@ -341,10 +388,10 @@ export default function EmployeeVCard(){
           mt:3,
         }}
       >
-<Button variant="contained" startIcon={<Iconify width={24} icon="ic:round-email" />}>
+<Button variant="contained" onClick={handleClickSave} startIcon={<Iconify width={24} icon="solar:user-plus-rounded-bold-duotone" />} sx={{width:150}}>
   Save
 </Button>
-<Button variant="contained" startIcon={<Iconify width={24} icon="ic:round-email" />}>
+<Button variant="contained" onClick={handleClickShare} startIcon={<Iconify width={24} icon="solar:share-bold-duotone" />} sx={{width:150}}>
   Share
 </Button>
       </Stack>
@@ -353,10 +400,10 @@ export default function EmployeeVCard(){
 
     return(
         <Container maxWidth="xl">
-            <Stack direction='column' alignItems='center' justifyContent='space-around' >
+            <Stack direction='column' alignItems='center' justifyContent='space-around' height='750px' >
             <Card
             sx={{
-                mt:6,
+                m:3,
               width: 1,
               maxWidth: 450,
               height: '100%',
