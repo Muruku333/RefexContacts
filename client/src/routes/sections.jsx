@@ -15,6 +15,7 @@ export const EmployeeVCard = lazy(()=>import('src/pages/employee-vcard'));
 export const CompanyListPage = lazy(() => import('src/pages/company-list'));
 export const CompanyCreatePage = lazy(()=>import('src/pages/company-create'));
 export const CompanyEditPage = lazy(()=>import('src/pages/company-edit'));
+export const PrintRequestListPage = lazy(()=>import('src/pages/print-request'));
 export const IndexPage = lazy(() => import('src/pages/app'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
@@ -83,8 +84,8 @@ export default function Router() {
           ],
         },
         {
-          path: 'downloads',
-          element: <IndexPage />,
+          path: 'print_requests',
+          element: <PrintRequestListPage />,
         },
         {
           path: 'change_password',

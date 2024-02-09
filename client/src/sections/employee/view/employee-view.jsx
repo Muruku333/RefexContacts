@@ -449,7 +449,7 @@ sx={{
                 qrStyle="dots"
                 eyeRadius={10}
                 removeQrCodeBehindLogo
-                logoPadding={1}
+                // logoPadding={1}
               />
 </Box>
 </Box>

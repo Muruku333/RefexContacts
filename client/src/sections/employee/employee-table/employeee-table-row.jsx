@@ -17,6 +17,7 @@ import Iconify from 'src/components/iconify';
 
 import { useRouter } from 'src/routes/hooks';
 import axios from 'axios';
+import { ListItemText } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -106,15 +107,23 @@ export default function EmployeeTableRow({
           <Checkbox disableRipple checked={selected} onChange={handleClick} />
         </TableCell>
 
-        <TableCell>{employeeId}</TableCell>
+        <TableCell>
+        <Typography variant="subtitle2" noWrap>
+              {employeeId}
+            </Typography>
+          </TableCell>
 
-        <TableCell component="th" scope="row" padding="none">
+        {/* <TableCell component="th" scope="row" padding="none">
           <Stack direction="row" alignItems="center" spacing={2}>
             <Avatar alt={name} src={photo} />
             <Typography variant="subtitle2" noWrap>
               {name}
             </Typography>
           </Stack>
+        </TableCell> */}
+        <TableCell sx={{display:'flex',height:'100%'}}>
+        <Avatar alt={name} src={photo} sx={{mr:2}}/>
+        <ListItemText sx={{m:0}} primary={name} secondary={email}/>
         </TableCell>
 
         <TableCell>{mobileNumber}</TableCell>
