@@ -110,7 +110,7 @@ export default function EmployeeEdit(){
       const fetchBranches = async(companyId)=>{
         try {
           const branchesResponse = await axios.get(`/api/companies/${companyId}`);
-          console.log(branchesResponse);
+          // console.log(branchesResponse);
           if (branchesResponse.data.status) {
             console.log(branchesResponse.data.results[0].company_branches);
             setBranches(branchesResponse.data.results[0].company_branches);
@@ -154,6 +154,15 @@ export default function EmployeeEdit(){
       fetchData();
       fetchCompanies();
     },[employeeId]);
+
+    useEffect(()=>{
+      setEmployeeData((prev) => {
+        if(branches.length>0){
+          return { ...prev, branchId: branches[0].branch_id};
+        }
+    return prev;
+  });
+},[branches]);
   
     const handleInputChange = (field, value) => {
       const updatedEmployeeData = { ...employeeData };
@@ -379,14 +388,11 @@ export default function EmployeeEdit(){
                       }
                       onChange={(event, newValue) => {
                         if (newValue) {
-                          console.log(newValue.company_id);
                           handleInputChange('companyId', newValue.company_id);
-                          handleInputChange('branchId', newValue.branches[0].branch_id);
                           setBranches(newValue.branches);
                         } else {
                           setBranches([]);
                           handleInputChange('companyId', '');
-                          handleInputChange('branchId', '');
                         }
                       }}
                       options={companies}

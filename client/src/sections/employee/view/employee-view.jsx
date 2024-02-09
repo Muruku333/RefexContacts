@@ -104,6 +104,7 @@ export default function EmployeeView() {
     alignItems='center'
     sx={{
       // zIndex: 9,
+      top:8,
       verticalAlign:"middle"
     }}
     >
@@ -115,11 +116,11 @@ export default function EmployeeView() {
         
         // top: 30,
         // left: 150,
-        overflow: 'hidden',
+        // overflow: 'hidden',
         // position: 'absolute',
-        verticalAlign: 'bottom',
-        display: 'inline-block',
-        height: '50px',
+        // verticalAlign: 'bottom',
+        // display: 'inline-block',
+        height: '80px',
       }}
       // sx={{
 
@@ -135,7 +136,7 @@ export default function EmployeeView() {
     <Box
     sx={{
       zIndex: 9,
-      mt:7,
+      mt:5,
       // top: 150,
       // left: 150,
       // position: 'absolute',
@@ -335,7 +336,7 @@ sx={{
     </Stack>
 
     <Stack direction="row">
-    <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
+    <Iconify width={35} icon="mdi:location" sx={{ mr: 1.1 }} />
     <Link
     href={employee.branch.google_map_link}
       color="inherit"
@@ -427,7 +428,7 @@ sx={{
                   p: (theme) => theme.spacing(4),
                   // ...((latestPostLarge || latestPost) && {
                   width: 1,
-                  bottom: 25,
+                  bottom: 0,
                   position: 'absolute',
                   // }),
                 }}
