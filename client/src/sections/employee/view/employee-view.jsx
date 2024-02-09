@@ -104,7 +104,7 @@ export default function EmployeeView() {
     alignItems='center'
     sx={{
       // zIndex: 9,
-      top:8,
+      // top:8,
       verticalAlign:"middle"
     }}
     >
@@ -229,23 +229,6 @@ sx={{
     />
   );
 
-  const renderDate = (
-    <Typography
-      variant="caption"
-      component="div"
-      sx={{
-        mb: 2,
-        // color: 'text.disabled',
-        // ...((latestPostLarge || latestPost) && {
-          opacity: 0.48,
-          color: 'common.black',
-        // }),
-      }}
-    >
-      Hello
-    </Typography>
-  );
-
   const renderLinks = (
     <Stack
       spacing={2}
@@ -336,7 +319,7 @@ sx={{
     </Stack>
 
     <Stack direction="row">
-    <Iconify width={35} icon="mdi:location" sx={{ mr: 1.1 }} />
+    <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
     <Link
     href={employee.branch.google_map_link}
       color="inherit"
@@ -460,8 +443,8 @@ sx={{
               <QRCode
                 value={`http:localhost:3030/vcard/${employeeId}`}
                 logoImage={employee.company.company_logo}
-                logoWidth={60}
-                logoHeight={50}
+                logoWidth={70}
+                logoHeight={40}
                 size={200}
                 qrStyle="dots"
                 eyeRadius={10}

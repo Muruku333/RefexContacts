@@ -7,10 +7,12 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Iconify from 'src/components/iconify';
 import { alpha } from '@mui/material/styles';
 import axios from 'axios';
+import { useRouter } from 'src/routes/hooks';
 
 export default function EmployeeVCard(){
 
     const { employeeId } = useParams();
+    const router = useRouter();
 
     const [employee, setEmployee] = useState({
         employee_id: 0,
@@ -40,16 +42,22 @@ export default function EmployeeVCard(){
           try {
             const response = await axios.get(`/api/vcard/${employeeId}`);
             if (response.data.status) {
-              setEmployee(response.data.results[0]);
+              if(!response.data.results[0].is_active){
+                router.push('/404');
+              }else{
+                setEmployee(response.data.results[0]);
+              }
+              
             }
           } catch (error) {
-            console.error('Error fetching employee data:', error);
+            // console.error('Error fetching employee data:', error);
+            router.push('/404');
             setEmployee([]);
           }
         };
     
         fetchData();
-      }, [employeeId]);
+      }, [employeeId,router]);
 
       const handleClickSave = async () => {
         try {
@@ -130,7 +138,7 @@ export default function EmployeeVCard(){
             // position: 'absolute',
             verticalAlign: 'bottom',
             display: 'inline-block',
-            height: '50px',
+            height: '80px',
           }}
           // sx={{
     
@@ -146,7 +154,7 @@ export default function EmployeeVCard(){
         <Box
         sx={{
           zIndex: 9,
-          mt:7,
+          mt:5,
           // top: 150,
           // left: 150,
           // position: 'absolute',
@@ -237,23 +245,6 @@ export default function EmployeeVCard(){
             position: 'absolute',
           }}
         />
-      );
-
-      const renderDate = (
-        <Typography
-          variant="caption"
-          component="div"
-          sx={{
-            mb: 2,
-            // color: 'text.disabled',
-            // ...((latestPostLarge || latestPost) && {
-              opacity: 0.48,
-              color: 'common.black',
-            // }),
-          }}
-        >
-          Hello
-        </Typography>
       );
 
       const renderLinks = (
@@ -403,7 +394,7 @@ export default function EmployeeVCard(){
             <Stack direction='column' alignItems='center' justifyContent='space-around' height='750px' >
             <Card
             sx={{
-                m:3,
+              m:3,
               width: 1,
               maxWidth: 450,
               height: '100%',
