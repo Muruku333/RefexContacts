@@ -27,6 +27,18 @@ import TableNoData from '../employee-table/table-no-data';
 import { applyFilter, getComparator } from '../employee-table/utils';
 
 // ----------------------------------------------------------------------
+const HEADER_LABEL =[
+  { id: 'ep.employee_id', label: 'Employee ID' },
+  { id: 'ep.employee_name', label: 'Name' },
+  { id: 'ep.mobile_number', label: 'Mobile Number' },
+  { id: 'ep.landline', label: 'Landline' },
+  { id: 'ep.designation', label: 'designation' },
+  { id: 'cp.company_name', label: 'Company' },
+  { id: 'cpb.branch_name', label: 'Branch' },
+  // { id: 'landline', label: 'Landline', align: 'center' },
+  { id: 'ep.is_active', label: 'Status' },
+  { id: '' },
+];
 
 export default function EmployeeList() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -41,7 +53,9 @@ export default function EmployeeList() {
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('employee_id');
+  const [filterField, setFilterField] =useState('ep.employee_name');
+
+  const [orderBy, setOrderBy] = useState('ep.id');
 
   const [filterName, setFilterName] = useState('');
 
@@ -62,7 +76,7 @@ export default function EmployeeList() {
     const fetchData = async () => {
       try {
         await axios
-          .get(`/api/employees?page=${page}`)
+          .get(`/api/employees?field=${filterField}&search=${filterName}&sort=${orderBy}&order=${order}&page=${page}`)
           .then((response) => {
             if (response.data.status) {
               setEmployees(response.data.results);
@@ -71,15 +85,19 @@ export default function EmployeeList() {
             }
           })
           .catch((error) => {
+            setEmployees([]);
+            setInfo({});
             enqueueSnackbar(error.response.data.message, { variant: 'error', action });
           });
       } catch (error) {
+        setEmployees([]);
+        setInfo({});
         enqueueSnackbar(error.message, { variant: 'error', action });
       }
     };
 
     fetchData();
-  }, [page, refresh,action, enqueueSnackbar]);
+  }, [filterField,filterName, orderBy, order, page, refresh, action, enqueueSnackbar]);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -126,17 +144,22 @@ export default function EmployeeList() {
   };
 
   const handleFilterByName = (event) => {
-    setPage(0);
+    setFilterField('ep.employee_name');
+    setPage(1);
     setFilterName(event.target.value);
   };
 
-  const dataFiltered = applyFilter({
-    inputData: employees,
-    comparator: getComparator(order, orderBy),
-    filterName,
-  });
+  const dataFiltered = employees;
 
   const notFound = !dataFiltered.length && !!filterName;
+
+  // const dataFiltered = applyFilter({
+  //   inputData: employees,
+  //   comparator: getComparator(order, orderBy),
+  //   filterName,
+  // });
+
+  // const notFound = !dataFiltered.length && !!filterName;
 
   return (
     <Container maxWidth="xl">
@@ -176,18 +199,7 @@ export default function EmployeeList() {
                 numSelected={selected.length}
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
-                headLabel={[
-                  { id: 'employee_id', label: 'Employee ID' },
-                  { id: 'employee_name', label: 'Name' },
-                  { id: 'mobile_number', label: 'Mobile Number' },
-                  { id: 'landline', label: 'Landline' },
-                  { id: 'designation', label: 'designation' },
-                  { id: 'company_name', label: 'Company' },
-                  { id: 'branch_name', label: 'Branch' },
-                  // { id: 'landline', label: 'Landline', align: 'center' },
-                  { id: 'is_active', label: 'Status' },
-                  { id: '' },
-                ]}
+                headLabel={HEADER_LABEL}
               />
               <TableBody>
                 {dataFiltered

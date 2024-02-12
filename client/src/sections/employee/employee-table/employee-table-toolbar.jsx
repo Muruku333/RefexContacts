@@ -2,12 +2,14 @@ import PropTypes from 'prop-types';
 
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import Iconify from 'src/components/iconify';
+import { Stack } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -33,7 +35,7 @@ export default function EmployeeTableToolbar({ numSelected, filterName, onFilter
         <OutlinedInput
           value={filterName}
           onChange={onFilterName}
-          placeholder="Search Employee..."
+          placeholder="Search Employee Name..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify
@@ -52,11 +54,20 @@ export default function EmployeeTableToolbar({ numSelected, filterName, onFilter
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <Iconify icon="ic:round-filter-list" />
-          </IconButton>
-        </Tooltip>
+        <Stack direction='row' gap={1}>
+                  <Button  startIcon={<Iconify icon="solar:eye-bold" />}>
+  Columns
+</Button>
+<Button  startIcon={<Iconify icon="solar:filter-bold" />}>
+  Filters
+</Button>
+<Button  startIcon={<Iconify icon="solar:import-bold" />}>
+  Import
+</Button>
+<Button  startIcon={<Iconify icon="solar:export-bold" />}>
+  Export
+</Button>
+        </Stack>
       )}
     </Toolbar>
   );
