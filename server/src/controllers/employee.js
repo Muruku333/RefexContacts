@@ -59,6 +59,7 @@ const EmployeeController = {
   listEmployees: async (req, res) => {
     try {
       const cond = { ...req.query };
+      // console.log(cond);
       cond.field = cond.field || "ep.id";
       cond.search = cond.search || "";
       cond.page = Number(cond.page) || 1;

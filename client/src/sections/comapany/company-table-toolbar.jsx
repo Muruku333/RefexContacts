@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -52,11 +54,25 @@ export default function CompanyTableToolbar({ numSelected, filterName, onFilterN
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <Iconify icon="ic:round-filter-list" />
-          </IconButton>
-        </Tooltip>
+        // <Tooltip title="Filter list">
+        //   <IconButton>
+        //     <Iconify icon="ic:round-filter-list" />
+        //   </IconButton>
+        // </Tooltip>
+        <Stack direction='row' gap={1}>
+        <Button  startIcon={<Iconify icon="solar:eye-bold" />}>
+Columns
+</Button>
+<Button  startIcon={<Iconify icon="solar:filter-bold" />}>
+Filters
+</Button>
+<Button  startIcon={<Iconify icon="solar:import-bold" />}>
+Import
+</Button>
+<Button  startIcon={<Iconify icon="solar:export-bold" />}>
+Export
+</Button>
+</Stack>
       )}
     </Toolbar>
   );

@@ -63,6 +63,8 @@ export default function EmployeeList() {
 
   const [refresh, setRefresh]=useState(0);
 
+  // console.log(selected);
+
   const action = useCallback(
     (snackbarId) => (
       <IconButton color="inherit" onClick={() => closeSnackbar(snackbarId)}>
@@ -184,6 +186,8 @@ export default function EmployeeList() {
 
       <Card>
         <EmployeeTableToolbar
+          selectedEmployees={selected}
+          setSelectedEmployees={setSelected}
           numSelected={selected.length}
           filterName={filterName}
           onFilterName={handleFilterByName}

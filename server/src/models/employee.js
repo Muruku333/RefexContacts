@@ -34,6 +34,20 @@ const EmployeeModel = {
     return rows;
   },
 
+  getEmployeeByCondition: async (cond) => {
+    const [rows, fields] = await db.query(
+      `SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active, ep.company_id, ep.branch_id,
+      cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
+  FROM ${table} AS ep
+  INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
+  INNER JOIN ${table2} AS cpb ON ep.branch_id = cpb.branch_id
+  WHERE ${Object.keys(cond)
+        .map((item) => `${item} = '${cond[item]}'`)
+        .join(" AND ")}`
+    );
+    return rows;
+  },
+
   getEmployeesCountByCondition: async (cond) => {
     const [rows, fields] = await db.query(
       `SELECT COUNT(ep.id) AS totalData FROM ${table} AS ep
