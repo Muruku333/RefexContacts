@@ -1,6 +1,6 @@
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import React, { useMemo, useEffect, useContext, useReducer, createContext } from 'react';
+import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 
 // Action types
 const LOGIN = 'LOGIN';

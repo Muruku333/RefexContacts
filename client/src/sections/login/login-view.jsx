@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Link from "@mui/material/Link";
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { useRouter } from 'src/routes/hooks';
@@ -113,9 +114,9 @@ export default function LoginView() {
      
 
       <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
-        {/* <Link variant="subtitle2" underline="hover">
+        <Link href="forgot_password" variant="subtitle2" underline="hover" sx={{cursor:'pointer'}}>
           Forgot password?
-        </Link> */}
+        </Link>
       </Stack>
 
       <LoadingButton

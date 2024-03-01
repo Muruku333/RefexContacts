@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
-import {CompanyCreate } from 'src/sections/comapany/view';
+import { CompanyCreate } from 'src/sections/comapany/view';
 // --------------------------------------------------------------
 
 export default function CompanyCreatePage() {

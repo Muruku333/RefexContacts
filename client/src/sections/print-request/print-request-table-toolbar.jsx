@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
 
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 import Iconify from 'src/components/iconify';
 
@@ -47,32 +47,32 @@ export default function PrintRequestTableToolbar({ numSelected, filterName, onFi
         />
       )}
 
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <Iconify icon="eva:trash-2-fill" />
-          </IconButton>
-        </Tooltip>
-      ) : (
+      {numSelected > 0 ? (null
+        // <Tooltip title="Delete">
+        //   <IconButton>
+        //     <Iconify icon="eva:trash-2-fill" />
+        //   </IconButton>
+        // </Tooltip>
+      ) : (null
         // <Tooltip title="Filter list">
         //   <IconButton>
         //     <Iconify icon="ic:round-filter-list" />
         //   </IconButton>
         // </Tooltip>
-        <Stack direction='row' gap={1}>
-        <Button  startIcon={<Iconify icon="solar:eye-bold" />}>
-Columns
-</Button>
-<Button  startIcon={<Iconify icon="solar:filter-bold" />}>
-Filters
-</Button>
-{/* <Button  startIcon={<Iconify icon="solar:import-bold" />}>
-Import
-</Button>
-<Button  startIcon={<Iconify icon="solar:export-bold" />}>
-Export
-</Button> */}
-</Stack>
+//         <Stack direction='row' gap={1}>
+//         <Button  startIcon={<Iconify icon="solar:eye-bold" />}>
+// Columns
+// </Button>
+// <Button  startIcon={<Iconify icon="solar:filter-bold" />}>
+// Filters
+// </Button>
+// <Button  startIcon={<Iconify icon="solar:import-bold" />}>
+// Import
+// </Button>
+// <Button  startIcon={<Iconify icon="solar:export-bold" />}>
+// Export
+// </Button>
+// </Stack>
       )}
     </Toolbar>
   );

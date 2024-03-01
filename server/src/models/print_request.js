@@ -8,7 +8,9 @@ const PrintRequestModel = {
   },
   listRequests: async (cond) => {
     const [rows, fields] = await db.query(`
-        SELECT * FROM ${table}
+        SELECT pr.id, pr.request_id,pr.status,pr.created_by,cu.email AS cu_email,pr.created_at,pr.modified_by,mu.email AS mu_email,pr.modified_at FROM ${table} AS pr
+        INNER JOIN users AS cu ON pr.created_by = cu.user_id
+        INNER JOIN users AS mu ON pr.modified_by = mu.user_id
         WHERE ${cond.field} LIKE "%${cond.search}%"
         ORDER BY ${cond.sort} ${cond.order} 
         LIMIT ${cond.dataLimit} OFFSET ${cond.offset}
@@ -17,7 +19,9 @@ const PrintRequestModel = {
   },
   getRequestsCountByCondition: async(cond)=>{
     const [rows, fields] = await db.query(
-        `SELECT COUNT(id) AS totalData FROM ${table}
+        `SELECT COUNT(pr.id) AS totalData FROM ${table} AS pr
+        INNER JOIN users AS cu ON pr.created_by = cu.user_id
+        INNER JOIN users AS mu ON pr.modified_by = mu.user_id
         WHERE ${cond.field} LIKE "%${cond.search}%" ORDER BY ${cond.sort} ${cond.order}`
       );
       return rows;

@@ -109,25 +109,25 @@ const authController = {
 //             expiresIn: "1d",
 //           });
 
-//           const mailSubject = "Account created - GAMA AirOps";
+//           const mailSubject = "Account created - Refex Contacts";
 //           const verifyLink = `${FRONT_END_URL}/mail_verification/${token}`;
 
 //           const mailContent = `<p>Hi ${user.first_name} ${user.last_name}, Please Verify</p>
-//                 <p>We've created a user account for you in GAMA AirOPS.</p>
+//                 <p>We've created a user account for you in Refex Contacts.</p>
 //                 <p>Your login details:</p>
 //                 <ul>
 //                     <li>Username: ${user.email}</li>
 //                     <li>Password: ${password}</li>
 //                 </ul>
-//                 <p>Please click on the link to verify your email and log in at GAMA AirOPS <a href="${verifyLink}"> Click Here </a> and change your password for security.</p>
+//                 <p>Please click on the link to verify your email and log in at Refex Contacts <a href="${verifyLink}"> Click Here </a> and change your password for security.</p>
 //                 <p>If you need assistance, contact us at dinesh.r@refex.co.in or 9361083127.</p>
 //                 <div style="text-align: center;">
-// <a href="https://sparzana.com/">
-//     <img src="https://nxtbot.refex.group/sparzanalogo.png" alt="Sparzana Aviation" style="max-width: 100px;">
+// <a href="#">
+//     <img src="http:localhost:3001/assets/Refex-Logo.png" alt="Refex Contacts" style="max-width: 100px;">
 // </a>
 // </div>
 //                 <p>Best regards,</p>
-//                 <p>Dinesh Ravi<br>Jr Software Developer<br>Refex Groups</p>`;
+//                 <p>Refex Contacts Team</p>`;
 
 //                 sendMail(user.email, mailSubject, mailContent, async (error, info)=>{
 //                   if (error) {
@@ -169,84 +169,84 @@ const authController = {
 //       });
 //     }
 //   },
-//   forgotPassword: async (req, res) => {
-//     try {
-//       const { email } = req.body;
-//       const user = await userModel.getUsersByCondition({ email });
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await userModel.getUsersByCondition({ email });
 
-//       if (!user.length > 0){
-//         return Response.responseStatus(res, 404, "Email not exist");
-//       }
+      if (!user.length > 0){
+        return Response.responseStatus(res, 404, "Email not exist");
+      }
 
-//       const token = jwt.sign({ user: user[0] }, APP_KEY, { expiresIn: "30m",});
-//       const resetLink = `${FRONT_END_URL}/reset_password/${token}`;
+      const token = jwt.sign({ user: user[0] }, APP_KEY, { expiresIn: "30m",});
+      const resetLink = `${FRONT_END_URL}/reset_password/${token}`;
 
-//       const mailSubject = 'Password Reset Request - GAMA AirOps';
-//       const mailContent = `
-//       <p>Dear ${user[0].first_name},</p>
-//       <p>We have received a request to reset your password for GAMA AirOps. To proceed, please click the following link:</p>
-//       <p><a href="${resetLink}">Reset Password</a></p>
-//       <p>If you did not initiate this password reset, kindly disregard this email.</p>
-//       <p>Thank you for using GAMA AirOps.</p>
-//       <div style="text-align: center;">
-//   <a href="https://sparzana.com/">
-//       <img src="https://nxtbot.refex.group/sparzanalogo.png" alt="Sparzana Aviation" style="max-width: 100px;">
-//   </a>
-// </div>
-//   `;
+      const mailSubject = 'Password Reset Request - Refex Contacts';
+      const mailContent = `
+      <p>Dear ${user[0].first_name},</p>
+      <p>We have received a request to reset your password for Refex Contacts. To proceed, please click the following link:</p>
+      <p><a href="${resetLink}">Reset Password</a></p>
+      <p>If you did not initiate this password reset, kindly disregard this email.</p>
+      <p>Thank you for using Refex Contacts.</p>
+      <div style="text-align: center;">
+  <a href="#">
+      <img src="http:localhost:3001/assets/Refex-Logo.png" alt="Refex Contacts" style="max-width: 100px;">
+  </a>
+</div>
+  `;
         
-//       sendMail(email, mailSubject, mailContent,(error, info)=>{
-//         if(error){
-//           return Response.responseStatus(res, 400, "Password reset link mail failed to send",error);
-//         }else{
-//           return Response.responseStatus(res, 200, "Password reset link mail sent successfully",info);
-//         }
-//       });
+      sendMail(email, mailSubject, mailContent,(error, info)=>{
+        if(error){
+          return Response.responseStatus(res, 400, "Password reset link mail failed to send",error);
+        }else{
+          return Response.responseStatus(res, 200, "Password reset link mail sent successfully",info);
+        }
+      });
 
-//     } catch (error) {
-//       console.log(error.message);
-//       return Response.responseStatus(res, 500, "Internal server error", {
-//         error: error.message,
-//       });
-//     }
-//   },
-//   resetPassword: async (req, res) => {
-//     try {
-//       const { token } = req.params;
-//       const {password, confirm_password} = req.body;
-//       if(password !== confirm_password){
-//         return Response.responseStatus(res,400,"Password and confirm password doesn't match");
-//       }
-//       const hashedPassword = bcrypt.hashSync(confirm_password, saltRounds);
-//       // Verify token
-//       const decoded = jwt.verify(token, APP_KEY);
-//       const result = await userModel.updateUserById(decoded.user.id,{password:hashedPassword});
-//       if(result.affectedRows>0){
-//         return Response.responseStatus(res,200,"Password reseted successfully");
-//       }else{
-//         return Response.responseStatus(res,400,"Password reset failed");
-//       }
-//     } catch (error) {
-//       console.log(error.message);
-//       return Response.responseStatus(res, 500, "Internal server error", {
-//         error: error.message,
-//       });
-//     }
-//   },
-//   verifyToken: async (req,res) =>{
-//     try {
-//       const {token} = req.params;
-//             // Verify token
-//             const decoded = jwt.verify(token, APP_KEY);
-//             return Response.responseStatus(res,200,"Valid Token", decoded);
-//     } catch (error) {
-//       if(error.name === 'TokenExpiredError'){
-//         return Response.responseStatus(res,401,"Token has expired!");
-//     }else{
-//       return Response.responseStatus(res,401,"Invalid token!");
-//     }
-//   }
-//   },
+    } catch (error) {
+      console.log(error.message);
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+  resetPassword: async (req, res) => {
+    try {
+      const { token } = req.params;
+      const {password, confirm_password} = req.body;
+      if(password !== confirm_password){
+        return Response.responseStatus(res,400,"Password and confirm password doesn't match");
+      }
+      const hashedPassword = bcrypt.hashSync(confirm_password, saltRounds);
+      // Verify token
+      const decoded = jwt.verify(token, APP_KEY);
+      const result = await userModel.updateUserById(decoded.user.id,{password:hashedPassword});
+      if(result.affectedRows>0){
+        return Response.responseStatus(res,200,"Password reseted successfully");
+      }else{
+        return Response.responseStatus(res,400,"Password reset failed");
+      }
+    } catch (error) {
+      console.log(error.message);
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+  verifyToken: async (req,res) =>{
+    try {
+      const {token} = req.params;
+            // Verify token
+            const decoded = jwt.verify(token, APP_KEY);
+            return Response.responseStatus(res,200,"Valid Token", decoded);
+    } catch (error) {
+      if(error.name === 'TokenExpiredError'){
+        return Response.responseStatus(res,401,"Token has expired!");
+    }else{
+      return Response.responseStatus(res,401,"Invalid token!");
+    }
+  }
+  },
 };
 
 module.exports = authController;

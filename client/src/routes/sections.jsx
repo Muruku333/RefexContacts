@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import { lazy, Suspense } from 'react';
-import { Outlet, Navigate, useRoutes } from 'react-router-dom';
+import { Navigate, Outlet, useRoutes } from 'react-router-dom';
 
-import LogoutPage from 'src/pages/logout';
 import { useAuth } from 'src/context/AuthContext';
 import DashboardLayout from 'src/layouts/dashboard';
+import LogoutPage from 'src/pages/logout';
 
 export const EmployeeListPage = lazy(() => import('src/pages/employee-list'));
 export const EmployeeCreatePage = lazy(() => import('src/pages/employee-create'));
@@ -20,6 +20,8 @@ export const IndexPage = lazy(() => import('src/pages/app'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const LoginPage = lazy(() => import('src/pages/login'));
+export const ForgotPasswordPage=lazy(()=>import('src/pages/forgot-password'));
+export const ResetPasswordPage=lazy(()=>import('src/pages/reset-password'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
@@ -87,10 +89,10 @@ export default function Router() {
           path: 'print_requests',
           element: <PrintRequestListPage />,
         },
-        {
-          path: 'change_password',
-          element: <IndexPage />,
-        },
+        // {
+        //   path: 'change_password',
+        //   element: <IndexPage />,
+        // },
         {
           path: 'logout',
           element: <LogoutPage />,
@@ -108,6 +110,14 @@ export default function Router() {
     {
       path: 'login',
       element: isAuthenticated ? <Navigate to="/employees" replace /> : <LoginPage />,
+    },
+    {
+      path:'forgot_password',
+      element:<ForgotPasswordPage/>,
+    },
+    {
+      path:'reset_password/:token',
+      element:<ResetPasswordPage/>
     },
     {
       path: '404',

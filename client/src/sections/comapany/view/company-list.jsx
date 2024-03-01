@@ -1,19 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { IconButton } from '@mui/material';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import Container from '@mui/material/Container';
+import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
-import { IconButton } from '@mui/material';
-import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
-import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
-import Pagination from '@mui/material/Pagination';
-import TablePagination from '@mui/material/TablePagination';
+import Typography from '@mui/material/Typography';
 import axios from 'axios';
 
-import { users } from 'src/_mock/user';
 // import { useAuth } from 'src/context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { RouterLink } from 'src/routes/components';
@@ -22,12 +20,11 @@ import { RouterLink } from 'src/routes/components';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
-import TableNoData from '../table-no-data';
-import CompanyTableRow from '../company-table-row';
 import CompanyTableHead from '../company-table-head';
-import TableEmptyRows from '../table-empty-rows';
+import CompanyTableRow from '../company-table-row';
 import CompanyTableToolbar from '../company-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from '../utils';
+import TableNoData from '../table-no-data';
+import { applyFilter, getComparator } from '../utils';
 
 // ----------------------------------------------------------------------
 

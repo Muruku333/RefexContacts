@@ -8,7 +8,11 @@ const PrintEmployeeModel = {
   },
   getPrintEmployeeByCondition: async (cond) => {
     const [rows, fields] = await db.query(
-      `SELECT * FROM ${table} WHERE ${Object.keys(cond)
+      `SELECT pe.id, pe.employee_id, employee_name,designation,mobile_number,email,landline,photo,is_active, emp.company_id, company_name, emp.branch_id,branch_name FROM ${table} AS pe
+      INNER JOIN employees AS emp ON emp.employee_id = pe.employee_id
+      INNER JOIN companies AS cp ON emp.company_id = cp.company_id
+      INNER JOIN company_branches AS cb ON emp.branch_id= cb.branch_id
+      WHERE ${Object.keys(cond)
         .map((item) => `${item} = '${cond[item]}'`)
         .join(" AND ")}`
     );

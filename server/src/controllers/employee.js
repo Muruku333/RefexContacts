@@ -1,7 +1,10 @@
 const EmployeeModel = require("../models/employee");
+const CompanyModel = require("../models/company");
+const BranchModel = require("../models/company_branches");
 const qs = require("querystring");
 const fs = require("fs");
-const vCardsJS = require('vcards-js');
+const vCardsJS = require("vcards-js");
+const xlsx = require("xlsx");
 const Response = require("../helpers/response");
 const { validationResult } = require("express-validator");
 const { APP_URL, LIMIT_DATA } = process.env;
@@ -53,6 +56,150 @@ const EmployeeController = {
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
       });
+    }
+  },
+
+  importEmployees: async (req, res) => {
+    try {
+      if (!req.file) {
+        return Response.responseStatus(res, 400, "File is required");
+      }
+      const created_by = req.userData.user_id;
+      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0]; // Assuming the data is in the first sheet
+      const worksheet = workbook.Sheets[sheetName];
+
+      const employeesData = xlsx.utils.sheet_to_json(worksheet);
+      // console.log(employeesData);
+      const successData = [];
+      const failureData = [];
+      for (let i = 0; i < employeesData.length; i++) {
+        try {
+          const employee_id = employeesData[i]["Employee Id"];
+          const employee_name = employeesData[i]["Employee Name"];
+          const designation = employeesData[i]["Designation"];
+          const mobile_number = employeesData[i]["Mobile Number"];
+          const landline = employeesData[i]["Landline"] || null;
+          const email = employeesData[i]["Email"];
+          const photo = null;
+          const is_active = employeesData[i]["Active"].toLowerCase() === "yes";
+          const company_name = employeesData[i]["Company Name"];
+          const branch_name = employeesData[i]["Branch Name"];
+
+          const empIdResult = await EmployeeModel.getEmployeeByCondition({
+            employee_id,
+          });
+          const companyResult = await CompanyModel.getCompanyByCondition({
+            company_name,
+          });
+          const branchResult = await BranchModel.getCompanyBranchesByCondition({
+            branch_name,
+          });
+
+          // console.log(empIdResult);
+          // console.log(companyResult);
+          // console.log(branchResult);
+
+
+          if (
+            !empIdResult.length > 0 &&
+            companyResult.length > 0 &&
+            branchResult.length > 0
+          ) {
+            const result = await EmployeeModel.createEmployee({
+              employee_id,
+              employee_name,
+              designation,
+              mobile_number,
+              landline,
+              email,
+              photo,
+              is_active,
+              company_id: companyResult[0].company_id,
+              branch_id: branchResult[0].branch_id,
+              created_by,
+              modified_by: created_by,
+            });
+            if (result.affectedRows > 0) {
+              successData.push(employeesData[i]);
+            } else {
+              failureData.push(employeesData[i]);
+            }
+          } else {
+            failureData.push(employeesData[i]);
+          }
+        } catch (error) {
+          console.log(error);
+          failureData.push(employeesData[i]);
+        }
+      }
+      if (successData.length > 0) {
+        return Response.responseStatus(res, 200, "Data imported successfully", {
+          successData,
+          failureData,
+        });
+      } else {
+        return Response.responseStatus(res, 400, "Data import unsuccessful", {
+          successData,
+          failureData,
+        });
+      }
+    } catch (error) {
+      console.log("Error :", error);
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+
+  exportEmployee: async(req,res)=>{
+    try {
+
+      const employeeData = await EmployeeModel.getAllEmployeeWithMapedData();
+
+      let employees=[];
+
+      for(let i=0;i<employeeData.length;i++){
+        const {
+          employee_id,
+          employee_name,
+          designation,
+          mobile_number,
+          landline,
+          email,
+          is_active,
+          company_name,
+          branch_name,
+        }=employeeData[i];
+
+        employees =[
+          ...employees,
+          {
+            'Employee Id':employee_id,
+            'Employee Name':employee_name,
+            Designation:designation,
+            'Mobile Number':mobile_number,
+            Landline:landline,
+            Email:email,
+            Active:is_active?"Yes":"No",
+            'Company Name':company_name,
+            'Branch Name':branch_name
+          }
+        ]
+      }
+
+      const filename = 'EmployeeData.xlsx';
+      const wb = xlsx.utils.book_new();
+      const ws = xlsx.utils.json_to_sheet(employees);
+      xlsx.utils.book_append_sheet(wb, ws, 'Employees');
+      const wbBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+  
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.send(wbBuffer);
+    } catch (error) {
+      console.error('Error exporting employee data:', error);
+      return Response.responseStatus(res, 500, "Internal server error");
     }
   },
 
@@ -507,11 +654,7 @@ const EmployeeController = {
         employee_id
       );
 
-     
-
       if (rows.length > 0) {
-
-
         const {
           id,
           employee_id,
@@ -589,7 +732,7 @@ const EmployeeController = {
         fileStream.on("end", () => {
           fs.unlinkSync(fileName);
         });
-      }else{
+      } else {
         return Response.responseStatus(
           res,
           400,

@@ -1,38 +1,51 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
-import Typography from '@mui/material/Typography';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
-import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TablePagination from '@mui/material/TablePagination';
 import Tabs from '@mui/material/Tabs';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 
-import { users } from 'src/_mock/user';
+// import { useAuth } from 'src/context/AuthContext';
+import { useSnackbar } from 'notistack';
 import { RouterLink } from 'src/routes/components';
 
 import Iconify from 'src/components/iconify';
-import Scrollbar from 'src/components/scrollbar';
 import Label from 'src/components/label';
+import Scrollbar from 'src/components/scrollbar';
 
-import TableNoData from '../table-no-data';
-import PrintRequestTableRow from '../print-request-table-row';
 import PrintRequestTableHead from '../print-request-table-head';
-import TableEmptyRows from '../table-empty-rows';
+import PrintRequestTableRow from '../print-request-table-row';
 import PrintRequestTableToolbar from '../print-request-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from '../utils';
+import TableEmptyRows from '../table-empty-rows';
+import TableNoData from '../table-no-data';
+import { emptyRows } from '../utils';
 
 // ----------------------------------------------------------------------
+
+const HEADER_LABEL = [
+  { id: 'list' },
+  { id: 'pr.request_id', label: 'Request ID' },
+  { id: 'total_employees', label: 'Total Employees' },
+  { id: 'cu.email', label: 'Created By' },
+  { id: 'mu.email', label: 'Modified By' },
+  // { id: 'landline', label: 'Landline', align: 'center' },
+  { id: 'pr.status', label: 'Status' },
+  { id: 'menu' },
+];
 
 const StyledTabs = styled((props) => (
   <Tabs {...props} TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }} />
@@ -66,21 +79,92 @@ const StyledTab = styled((props) => <Tab disableRipple {...props} />)(({ theme }
 }));
 
 export default function PrintRequestList() {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const [printRequests, setPrintRequests] = useState([]);
+
+  const [info, setInfo] = useState({});
+
   const [tapValue, setTapValue] = useState(0);
 
   const [page, setPage] = useState(0);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('desc');
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [filterField, setFilterField] = useState('pr.id');
+
+  const [orderBy, setOrderBy] = useState('pr.id');
 
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [refresh, setRefresh] = useState(0);
+
+  const action = useCallback(
+    (snackbarId) => (
+      <IconButton color="inherit" onClick={() => closeSnackbar(snackbarId)}>
+        <Iconify icon="eva:close-outline" />
+      </IconButton>
+    ),
+    [closeSnackbar]
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await axios
+          .get(
+            `/api/print_request?field=${filterField}&search=${filterName}&sort=${orderBy}&order=${order}&page=${page}`
+          )
+          .then((response) => {
+            if (response.data.status) {
+              setPrintRequests(response.data.results);
+              setInfo(response.data.info);
+              // console.log(response.data.results);
+            }
+          })
+          .catch((error) => {
+            setPrintRequests([]);
+            // console.log(error);
+            setInfo(error.response.data.info);
+            // enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+          });
+      } catch (error) {
+        setPrintRequests([]);
+        setInfo({});
+        enqueueSnackbar(error.message, { variant: 'error', action });
+      }
+    };
+
+    fetchData();
+  }, [filterField, filterName, orderBy, order, page, refresh, action, enqueueSnackbar]);
+
   const handleTapChange = (event, newValue) => {
+    switch (newValue) {
+      case 0:
+        setFilterField('pr.id');
+        setFilterName('');
+        break;
+      case 1:
+        setFilterField('pr.status');
+        setFilterName('pending');
+        break;
+      case 2:
+        setFilterField('pr.status');
+        setFilterName('rejected');
+        break;
+      case 3:
+        setFilterField('pr.status');
+        setFilterName('approved');
+        break;
+      default:
+        setFilterField('pr.id');
+        setFilterName('');
+        break;
+    }
     setTapValue(newValue);
   };
 
@@ -94,7 +178,7 @@ export default function PrintRequestList() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = users.map((n) => n.name);
+      const newSelecteds = printRequests.map((n) => n.rerquest_id);
       setSelected(newSelecteds);
       return;
     }
@@ -129,15 +213,18 @@ export default function PrintRequestList() {
   };
 
   const handleFilterByName = (event) => {
+    setFilterField('pr.request_id');
     setPage(0);
     setFilterName(event.target.value);
   };
 
-  const dataFiltered = applyFilter({
-    inputData: users,
-    comparator: getComparator(order, orderBy),
-    filterName,
-  });
+  const dataFiltered = printRequests;
+
+  // const dataFiltered = applyFilter({
+  //   inputData: printRequests,
+  //   comparator: getComparator(order, orderBy),
+  //   filterName,
+  // });
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -150,7 +237,7 @@ export default function PrintRequestList() {
           href="/employees/list"
           variant="contained"
           component={RouterLink}
-          color='error'
+          color="error"
           startIcon={<Iconify icon="eva:arrow-back-fill" />}
         >
           To Employees List
@@ -167,7 +254,7 @@ export default function PrintRequestList() {
           <StyledTab
             icon={
               <Label color="info" variant={tapValue === 0 ? 'filled' : 'soft'}>
-                0
+                {info.all}
               </Label>
             }
             iconPosition="end"
@@ -176,7 +263,7 @@ export default function PrintRequestList() {
           <StyledTab
             icon={
               <Label color="warning" variant={tapValue === 1 ? 'filled' : 'soft'}>
-                0
+                {info.pending}
               </Label>
             }
             iconPosition="end"
@@ -185,7 +272,7 @@ export default function PrintRequestList() {
           <StyledTab
             icon={
               <Label color="error" variant={tapValue === 2 ? 'filled' : 'soft'}>
-                0
+                {info.rejected}
               </Label>
             }
             iconPosition="end"
@@ -194,7 +281,7 @@ export default function PrintRequestList() {
           <StyledTab
             icon={
               <Label color="success" variant={tapValue === 3 ? 'filled' : 'soft'}>
-                0
+              {info.approved}
               </Label>
             }
             iconPosition="end"
@@ -214,18 +301,11 @@ export default function PrintRequestList() {
               <PrintRequestTableHead
                 order={order}
                 orderBy={orderBy}
-                rowCount={users.length}
+                rowCount={printRequests.length}
                 numSelected={selected.length}
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
-                headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  { id: '' },
-                ]}
+                headLabel={HEADER_LABEL}
               />
               <TableBody>
                 {dataFiltered
@@ -233,23 +313,44 @@ export default function PrintRequestList() {
                   .map((row) => (
                     <PrintRequestTableRow
                       key={row.id}
-                      name={row.name}
-                      role={row.role}
+                      requestId={row.request_id}
+                      printEmployees={row.print_employees}
+                      createdBy={row.created.email}
+                      modifiedBy={row.modified.email}
                       status={row.status}
-                      company={row.company}
-                      avatarUrl={row.avatarUrl}
-                      isVerified={row.isVerified}
-                      selected={selected.indexOf(row.name) !== -1}
-                      handleClick={(event) => handleClick(event, row.name)}
+                      setRefresh={setRefresh}
+                      selected={selected.indexOf(row.request_id) !== -1}
+                      handleClick={(event) => handleClick(event, row.request_id)}
                     />
                   ))}
 
                 <TableEmptyRows
                   height={77}
-                  emptyRows={emptyRows(page, rowsPerPage, users.length)}
+                  emptyRows={emptyRows(page, rowsPerPage, printRequests.length)}
                 />
 
-                {notFound && <TableNoData query={filterName} />}
+                {/* {notFound && <TableNoData query={filterName} />} */}
+                {!(dataFiltered.length>0)&&(
+                                            <TableRow sx={{height:300}}>
+                                            <TableCell colSpan={13}>
+                                              <Stack spacing={1}>
+                                                <Box
+                                                  component="img"
+                                                  src="/assets/icons/ic_content.svg"
+                                                  sx={{ height: 120, mx: "auto" }}
+                                                />
+                                                <Typography
+                                                  textAlign="center"
+                                                  variant="subtitle1"
+                                                  color="text.secondary"
+                                                  component="span"
+                                                >
+                                                  No Data
+                                                </Typography>
+                                              </Stack>
+                                            </TableCell>
+                                          </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -258,7 +359,7 @@ export default function PrintRequestList() {
         <TablePagination
           page={page}
           component="div"
-          count={users.length}
+          count={printRequests.length}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
           rowsPerPageOptions={[5, 10, 25]}

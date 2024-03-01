@@ -56,11 +56,12 @@ export default function Header({ onOpenNav }) {
         </Link> */}
 
       <Stack direction="row" alignItems="center" mx={3}>
-        {Pages.map((page) => {
+        {Pages.map((page,index) => {
           const active = pathname.startsWith(page.path);
 
           return (
             <ListItemButton
+            key={index}
               component={RouterLink}
               href={page.path}
               sx={{

@@ -25,10 +25,10 @@ const MENU_OPTIONS = [
   //   label: 'Profile',
   //   icon: 'eva:person-fill',
   // },
-  {
-    label: 'Change Password',
-    icon: 'eva:settings-2-fill',
-  },
+  // {
+  //   label: 'Change Password',
+  //   icon: 'eva:settings-2-fill',
+  // },
 ];
 
 // ----------------------------------------------------------------------

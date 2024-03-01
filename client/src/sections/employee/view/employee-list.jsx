@@ -24,7 +24,6 @@ import EmployeeTableHead from '../employee-table/employee-table-head';
 import EmployeeTableToolbar from '../employee-table/employee-table-toolbar';
 import EmployeeTableRow from '../employee-table/employeee-table-row';
 import TableNoData from '../employee-table/table-no-data';
-import { applyFilter, getComparator } from '../employee-table/utils';
 
 // ----------------------------------------------------------------------
 const HEADER_LABEL =[

@@ -20,14 +20,28 @@ exports.authCheck = (req, res, next) => {
 	}
 };
 
-exports.authType = (types) => {
+exports.authType = (type) => {
 	return async (req, res, next) => {
 		const data = req.userData;
 		const userRole = await userModel.getUsersByCondition({user_id:data.user_id});
-		if (userRole[0].user_type === types) {
+		if (userRole[0].user_type === type) {
 			return next();
 		} else {
 			return Response.responseStatus(res, 403, "You don't have permission");
 		}
+	};
+};
+
+exports.authAllowTypes = (types=[]) => {
+	return async (req, res, next) => {
+		const data = req.userData;
+		const userRole = await userModel.getUsersByCondition({user_id:data.user_id});
+
+		for(let i=0;i<types.length;i++){
+			if (!userRole[0].user_type === types[i]){
+				return Response.responseStatus(res, 403, "You don't have permission");
+			}
+		}
+		return next();
 	};
 };

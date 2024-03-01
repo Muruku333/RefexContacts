@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { Box, Button, IconButton, Card, Container, Stack, Typography,Link } from '@mui/material';
+import { Box, Button, Card, Container, IconButton, Link, Stack, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Unstable_Grid2';
 import { alpha } from '@mui/material/styles';
-import { useSnackbar } from 'notistack';
-import { useRouter } from 'src/routes/hooks';
-import Iconify from 'src/components/iconify';
-import html2canvas from 'html2canvas';
-import { QRCode } from 'react-qrcode-logo';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
+import { useSnackbar } from 'notistack';
+import { QRCode } from 'react-qrcode-logo';
+import Iconify from 'src/components/iconify';
+import { useRouter } from 'src/routes/hooks';
 
 export default function EmployeeView() {
   const { employeeId } = useParams();
@@ -40,6 +40,7 @@ export default function EmployeeView() {
       google_map_link: '',
     },
   });
+  const [refresh, setRefresh]=useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,7 +56,7 @@ export default function EmployeeView() {
     };
 
     fetchData();
-  }, [employeeId]);
+  }, [employeeId,refresh]);
 
   const action = useCallback(
     (snackbarId) => (
@@ -71,8 +72,8 @@ export default function EmployeeView() {
       axios.patch(`/api/employees/${employeeId}?active=${employee.is_active?'0':'1'}`).then((response)=>{
         if(response.data.status){
           enqueueSnackbar(response.data.message, { variant: 'success', action });
-          router.push('/employees/list');
-          // setRefresh((prev)=>prev+1);
+          // router.push('/employees/list');
+          setRefresh((prev)=>prev+1);
         }
       }).catch((error)=>{
         enqueueSnackbar(error.response.data.message, { variant: 'error', action })
@@ -485,6 +486,7 @@ sx={{
                 onClick={() => {
                   router.push(`/vcard/${employeeId}`);
                 }}
+                disabled={!employee.is_active}
                 // href="/employees/list"
                 variant="contained"
                 color="info"
@@ -499,12 +501,12 @@ sx={{
                 onClick={handleClickActiveChange}
                 // href="/employees/list"
                 variant="contained"
-                color="error"
+                color={employee.is_active?"error":"success"}
                 fullWidth
                 // component={RouterLink}
                 startIcon={<Iconify icon="solar:power-bold-duotone" />}
               >
-                Deactivate
+                {employee.is_active?"Deactivate":"Activate"}
               </Button>
             </Stack>
           </Card>

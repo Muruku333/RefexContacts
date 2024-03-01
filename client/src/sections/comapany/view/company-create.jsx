@@ -1,32 +1,29 @@
-import { useEffect, useRef, useState, forwardRef, Fragment } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 
 import {
-  Stack,
-  Button,
-  Container,
-  Typography,
   Box,
+  Button,
   Card,
-  styled,
-  Autocomplete,
-  TextField,
-  emphasize,
+  Container,
   IconButton,
+  Stack,
+  TextField,
   Tooltip,
+  Typography,
+  styled
 } from '@mui/material';
-import Grid from '@mui/material/Unstable_Grid2';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
+import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
 
+import { useSnackbar } from 'notistack';
 import Iconify from 'src/components/iconify';
 import { useAuth } from 'src/context/AuthContext';
-import { useSnackbar } from 'notistack';
-import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 
 const PhotoBox = styled(Box)(({ theme }) => ({

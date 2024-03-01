@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { Box, Button, IconButton, Card, Container, Stack, Typography,Link } from '@mui/material';
+import { Box, Button, Card, Container, Link, Stack, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
-import Grid from '@mui/material/Unstable_Grid2';
-import Iconify from 'src/components/iconify';
 import { alpha } from '@mui/material/styles';
 import axios from 'axios';
+import Iconify from 'src/components/iconify';
 import { useRouter } from 'src/routes/hooks';
 
 export default function EmployeeVCard(){
@@ -99,7 +98,7 @@ export default function EmployeeVCard(){
       const handleClickShare = async ()=>{
         try {
             // Check if the share API is supported in the browser
-            if (navigator.share) {
+            if (navigator.share !== undefined) {
               await navigator.share({
                 title: 'Refex Contacts',
                 text: 'Check out this link!',
@@ -390,7 +389,7 @@ export default function EmployeeVCard(){
       );
 
     return(
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{backgroundColor:'#282829',height:'110vh'}}>
             <Stack direction='column' alignItems='center' justifyContent='space-around' height='750px' >
             <Card
             sx={{
