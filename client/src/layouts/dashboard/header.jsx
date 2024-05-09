@@ -4,24 +4,24 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import { Link, ListItemButton, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
-import IconButton from '@mui/material/IconButton';
+import { Typography, ListItemButton } from '@mui/material';
+
+import { usePathname } from 'src/routes/hooks';
+import { RouterLink } from 'src/routes/components';
 
 import { useResponsive } from 'src/hooks/use-responsive';
-import { usePathname } from 'src/routes/hooks';
+
 import { bgBlur } from 'src/theme/css';
-import { RouterLink } from 'src/routes/components';
-import Iconify from 'src/components/iconify';
+
 
 // import Searchbar from './common/searchbar';
 
 import Logo from 'src/components/logo';
 
-import { NAV, HEADER } from './config-layout';
+import { HEADER } from './config-layout';
 import AccountPopover from './common/account-popover';
 // import LanguagePopover from './common/language-popover';
-import NotificationsPopover from './common/notifications-popover';
 
 const Pages = [
   { title: 'Employees', path: '/employees' },

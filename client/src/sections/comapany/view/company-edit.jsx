@@ -1,31 +1,33 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
+import { useParams } from 'react-router-dom';
+import { useRef, useState, useEffect, forwardRef } from 'react';
 
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  IconButton,
-  Stack,
-  TextField,
-  Tooltip,
-  Typography,
-  styled
-} from '@mui/material';
+import Slide from '@mui/material/Slide';
 import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Unstable_Grid2';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Slide from '@mui/material/Slide';
-import Grid from '@mui/material/Unstable_Grid2';
-import axios from 'axios';
+import {
+  Box,
+  Card,
+  Stack,
+  Button,
+  styled,
+  Tooltip,
+  Container,
+  TextField,
+  IconButton,
+  Typography
+} from '@mui/material';
 
-import { useSnackbar } from 'notistack';
-import { useParams } from 'react-router-dom';
-import Iconify from 'src/components/iconify';
-import { useAuth } from 'src/context/AuthContext';
 import { useRouter } from 'src/routes/hooks';
+
+import { useAuth } from 'src/context/AuthContext';
+
+import Iconify from 'src/components/iconify';
 
 const PhotoBox = styled(Box)(({ theme }) => ({
   width: 250,

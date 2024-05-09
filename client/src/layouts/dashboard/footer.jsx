@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
+import { styled } from '@mui/material/styles';
 // @mui
 import Typography from "@mui/material/Typography";
-import { styled } from '@mui/material/styles';
 
 const FooterBox=styled('footer')(({ theme }) => ({
   flexGrow: 1,

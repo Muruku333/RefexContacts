@@ -11,7 +11,6 @@ import IconButton from '@mui/material/IconButton';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { account } from 'src/_mock/account';
 import { useAuth } from 'src/context/AuthContext';
 
 // ----------------------------------------------------------------------

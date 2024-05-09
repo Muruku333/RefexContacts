@@ -1,6 +1,7 @@
 const Response = require("../helpers/response");
 const PDFDocument = require("pdfkit");
 const qs = require("querystring");
+const fs=require("fs");
 const QRCode = require("qrcode");
 const PrintRequestModel = require("../models/print_request");
 const PrintEmployeeModel = require("../models/print_employee");
@@ -392,7 +393,6 @@ const mailContent = `<p>Hi ${resultCU[0].first_name} ${resultCU[0].last_name},</
           align: "center", // Center horizontally
           valign: "center", // Center vertically
         }); // .rect(244.375, 297.5, 1.5 * 72, 1* 72)
-        doc.rect(171.5, 260.5, 3.5 * 72.5, 2 * 73).stroke(); // Border dimensions in points
         // End of Front Side of the card -------------------------------------------
 
         // Start of Back Side of the card -----------------------------------------

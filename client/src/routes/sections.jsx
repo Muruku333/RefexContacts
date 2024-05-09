@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import { lazy, Suspense } from 'react';
-import { Navigate, Outlet, useRoutes } from 'react-router-dom';
+import { Outlet, Navigate, useRoutes } from 'react-router-dom';
 
+import LogoutPage from 'src/pages/logout';
 import { useAuth } from 'src/context/AuthContext';
 import DashboardLayout from 'src/layouts/dashboard';
-import LogoutPage from 'src/pages/logout';
 
 export const EmployeeListPage = lazy(() => import('src/pages/employee-list'));
 export const EmployeeCreatePage = lazy(() => import('src/pages/employee-create'));

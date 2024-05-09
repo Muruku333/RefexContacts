@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { Box, Button, Card, Container, Link, Stack, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import { alpha } from '@mui/material/styles';
-import axios from 'axios';
-import Iconify from 'src/components/iconify';
+import { Box, Card, Link, Stack, Button, Container, Typography } from '@mui/material';
+
 import { useRouter } from 'src/routes/hooks';
+
+import Iconify from 'src/components/iconify';
 
 export default function EmployeeVCard(){
 

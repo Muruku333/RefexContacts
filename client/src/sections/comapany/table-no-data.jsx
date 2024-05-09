@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
 import Paper from '@mui/material/Paper';
-import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
 // ----------------------------------------------------------------------

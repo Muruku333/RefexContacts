@@ -1,31 +1,33 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
-
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Card,
-  Container,
-  IconButton,
-  Stack,
-  TextField,
-  Tooltip,
-  Typography,
-  styled
-} from '@mui/material';
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
-import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'axios';
-
 import { useSnackbar } from 'notistack';
-import Iconify from 'src/components/iconify';
-import { useAuth } from 'src/context/AuthContext';
+import { useRef, useState, useEffect, forwardRef } from 'react';
+
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Unstable_Grid2';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import {
+  Box,
+  Card,
+  Stack,
+  Button,
+  styled,
+  Tooltip,
+  Container,
+  TextField,
+  IconButton,
+  Typography,
+  Autocomplete,
+} from '@mui/material';
+
 import { useRouter } from 'src/routes/hooks';
+
+import { useAuth } from 'src/context/AuthContext';
+
+import Iconify from 'src/components/iconify';
 
 const PhotoBox = styled(Box)(({ theme }) => ({
   width: 200,
@@ -59,10 +61,9 @@ const PhotoStack = styled(Stack)(({ theme, isError, selectedPhoto }) => ({
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
-
 export default function EmployeeCreate() {
   const { user } = useAuth();
-  const {enqueueSnackbar, closeSnackbar} = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const fileInputRef = useRef(null);
   const router = useRouter();
 
@@ -82,7 +83,7 @@ export default function EmployeeCreate() {
   const [branches, setBranches] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const [changeMade,setChangeMade]=useState(false);
+  const [changeMade, setChangeMade] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
 
   useEffect(() => {
@@ -98,14 +99,14 @@ export default function EmployeeCreate() {
     fetchCompanies();
   });
 
-  useEffect(()=>{
-          setEmployeeData((prev) => {
-            if(branches.length>0){
-              return { ...prev, branchId: branches[0].branch_id};
-            }
-        return prev;
-      });
-  },[branches]);
+  useEffect(() => {
+    setEmployeeData((prev) => {
+      if (branches.length > 0) {
+        return { ...prev, branchId: branches[0].branch_id };
+      }
+      return prev;
+    });
+  }, [branches]);
 
   const handleInputChange = (field, value) => {
     const updatedEmployeeData = { ...employeeData };
@@ -147,17 +148,19 @@ export default function EmployeeCreate() {
     if (!employeeData.branchId) errors.branchId = 'Branch Name is required.';
     if (!employeeData.employeeId) errors.employeeId = 'Employeee ID is required.';
     if (!employeeData.employeeName) errors.employeeName = 'Employee Name is required.';
+    if (!employeeData.designation) errors.designation = 'Designation is required';
+    if (!employeeData.mobileNumber) errors.mobileNumber = 'Mobile Number is required';
     if (!employeeData.email) errors.email = 'Email is required.';
     if (!employeeData.photo) errors.photo = 'Photo is required.';
 
     return errors;
   };
 
-  const action = snackbarId => (
-    <IconButton color='inherit' onClick={()=>closeSnackbar(snackbarId)}>
-      <Iconify icon="eva:close-outline"/>
+  const action = (snackbarId) => (
+    <IconButton color="inherit" onClick={() => closeSnackbar(snackbarId)}>
+      <Iconify icon="eva:close-outline" />
     </IconButton>
-  )
+  );
 
   const handleSubmitAircraft = async (event) => {
     // console.log('It worked');
@@ -168,13 +171,10 @@ export default function EmployeeCreate() {
     }
     try {
       await axios
-        .post(
-          `/api/employees`,
-          employeeData
-        )
+        .post(`/api/employees`, employeeData)
         .then((response) => {
           console.log(response);
-          if(response.data.status){
+          if (response.data.status) {
             // setEmployeeData({
             //   employeeId: '',
             //   employeeName: '',
@@ -190,7 +190,10 @@ export default function EmployeeCreate() {
             // setSelectedPhoto(null);
             // setBranches([]);
             router.push('/employees/list');
-            enqueueSnackbar(response.data.message,{variant:response.data.status?"success":"error",action,});
+            enqueueSnackbar(response.data.message, {
+              variant: response.data.status ? 'success' : 'error',
+              action,
+            });
           }
         })
         .catch((error) => {
@@ -201,10 +204,10 @@ export default function EmployeeCreate() {
 
           //   })
           // }
-          enqueueSnackbar(error.response.data.message,{variant:"error",action,});
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
         });
     } catch (error) {
-      enqueueSnackbar(error.message,{variant:"error",action,});
+      enqueueSnackbar(error.message, { variant: 'error', action });
     }
   };
 
@@ -215,13 +218,13 @@ export default function EmployeeCreate() {
 
         <Stack direction="row" alignItems="center" gap={3}>
           <Button
-          onClick={()=>{
-            if(changeMade){
-              handleClickAlert();
-            }else{
-              router.back();
-            }
-          }}
+            onClick={() => {
+              if (changeMade) {
+                handleClickAlert();
+              } else {
+                router.back();
+              }
+            }}
             // href="/employees/list"
             variant="contained"
             color="error"
@@ -414,6 +417,7 @@ export default function EmployeeCreate() {
                 <TextField
                   id="designation"
                   fullWidth
+                  required
                   label="Designation"
                   value={employeeData.designation}
                   onChange={(event) => {
@@ -427,6 +431,7 @@ export default function EmployeeCreate() {
                 <TextField
                   id="mobile_number"
                   fullWidth
+                  required
                   label="Mobile Number"
                   value={employeeData.mobileNumber}
                   onChange={(event) => {
@@ -477,15 +482,15 @@ export default function EmployeeCreate() {
                     </Button>
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>
-                  <>
+                    <>
                       <Button
                         fullWidth
                         variant="contained"
                         color="error"
-                         onClick={()=>{
-                          if(changeMade){
+                        onClick={() => {
+                          if (changeMade) {
                             handleClickAlert();
-                          }else{
+                          } else {
                             router.back();
                           }
                         }}
@@ -502,8 +507,7 @@ export default function EmployeeCreate() {
                         <DialogTitle>Are you sure ?</DialogTitle>
                         <DialogContent>
                           <DialogContentText id="alert-dialog-slide-description">
-                            Created data and Changes you where made can&apos;t be
-                            save..!
+                            Created data and Changes you where made can&apos;t be save..!
                           </DialogContentText>
                         </DialogContent>
                         <DialogActions>

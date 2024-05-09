@@ -1,21 +1,26 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link as RouterLink, useParams, useLocation  } from "react-router-dom";
+import { useParams, Link as RouterLink } from "react-router-dom";
+
+import { LoadingButton } from "@mui/lab";
+import { alpha, styled, useTheme } from '@mui/material/styles';
 // @mui
-import { styled } from "@mui/material/styles";
 import {
-  Button,
-  Typography,
-  Container,
   Box,
   Card,
-  TextField,
   Link,
+  Button,
+  TextField,
+  Typography,
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { LoadingButton } from "@mui/lab";
+
+import { bgGradient } from 'src/theme/css';
+import Footer from "src/layouts/dashboard/footer";
+
+import Logo from 'src/components/logo';
 
 import Iconify from "../components/iconify";
 
@@ -31,11 +36,7 @@ const StyledContent = styled("div")(({ theme }) => ({
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
-  // const { search } = useLocation();
-  // const params = new URLSearchParams(search);
-  // const token = params.get('token');
-
-  console.log(token);
+  const theme = useTheme();
 
   const [isValidToken, setIsValidToken] = useState(false);
   const [user, setUser] = useState({
@@ -122,8 +123,24 @@ export default function ResetPasswordPage() {
         <title> Reset Password | Refex Contacts </title>
       </Helmet>
 
+      <Box
+      sx={{
+        ...bgGradient({
+          color: alpha(theme.palette.background.default, 0.9),
+          imgUrl: '/assets/background/overlay_4.jpg',
+        }),
+        height: 1,
+      }}
+    >
+      <Logo
+        sx={{
+          position: 'fixed',
+          top: { xs: 16, md: 24 },
+          left: { xs: 16, md: 24 },
+        }}
+      />
+
       {isValidToken ? (
-          <Container>
             <StyledContent sx={{ textAlign: "center", alignItems: "center" }}>
               <Card sx={{ p: 3 }}>
                 <Typography variant="h3" color={!status?"inherit":"text.success"} paragraph>
@@ -215,7 +232,7 @@ export default function ResetPasswordPage() {
                   <Typography
                     mt={1}
                     variant="subtitle1"
-                    color={status ? "text.success" : "error"}
+                    color={status ?theme.palette.success.main:theme.palette.error.main}
                     align="center"
                   >
                     {message}
@@ -235,9 +252,7 @@ export default function ResetPasswordPage() {
                 </Typography>
               </Card>
             </StyledContent>
-          </Container>
       ) : (
-        <Container>
           <StyledContent sx={{ textAlign: "center", alignItems: "center" }}>
             <Typography variant="h3" paragraph>
               {message}
@@ -262,8 +277,9 @@ export default function ResetPasswordPage() {
               Go To Login Page
             </Button>
           </StyledContent>
-        </Container>
       )}
+              <Footer/>
+        </Box>
     </>
   );
 }

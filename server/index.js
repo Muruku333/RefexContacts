@@ -43,12 +43,12 @@ app.all("/api/*", (req, res) => {
   });
 
 // Serve static files from the 'client/dist' directory
-app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, './dist')));
 app.use(history());
 
 // Serve the index.html for all routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+    res.sendFile(path.join(__dirname, './dist', 'index.html'));
   });
 
 const PORT = process.env.APP_PORT || 3000;

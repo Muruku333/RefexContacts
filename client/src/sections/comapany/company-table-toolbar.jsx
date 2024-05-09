@@ -1,13 +1,9 @@
 import PropTypes from 'prop-types';
 
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import Iconify from 'src/components/iconify';
 

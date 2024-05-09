@@ -30,6 +30,10 @@ const EmployeeController = {
         createdBy,
       } = req.body;
 
+      const exists=await EmployeeModel.getEmployeeByCondition({employee_id:employeeId});
+      if(exists.length)
+        return Response.responseStatus(res, 403,  `An employee with the ID-${employeeId} already exists.`);
+
       const employee_data = {
         employee_id: employeeId,
         employee_name: employeeName,

@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-
-import { Box, Button, Card, Container, IconButton, Link, Stack, Typography } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
-import Grid from '@mui/material/Unstable_Grid2';
-import { alpha } from '@mui/material/styles';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
 import { useSnackbar } from 'notistack';
 import { QRCode } from 'react-qrcode-logo';
-import Iconify from 'src/components/iconify';
+import { useParams } from 'react-router-dom';
+import { useRef, useState, useEffect, useCallback } from 'react';
+
+import Avatar from '@mui/material/Avatar';
+import { alpha } from '@mui/material/styles';
+import Grid from '@mui/material/Unstable_Grid2';
+import { Box, Card, Link, Stack, Button, Container, IconButton, Typography } from '@mui/material';
+
 import { useRouter } from 'src/routes/hooks';
+
+import Iconify from 'src/components/iconify';
 
 export default function EmployeeView() {
   const { employeeId } = useParams();
@@ -442,7 +444,7 @@ sx={{
             <Box
             sx={{border:'3px solid black',borderRadius:3,p:1}}>
               <QRCode
-                value={`http:localhost:3030/vcard/${employeeId}`}
+                value={`https://contacts.dev.refex.group/vcard/${employeeId}`}
                 logoImage={employee.company.company_logo}
                 logoWidth={70}
                 logoHeight={40}

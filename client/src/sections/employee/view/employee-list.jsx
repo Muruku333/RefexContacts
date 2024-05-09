@@ -1,29 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
-
-import { IconButton } from '@mui/material';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Container from '@mui/material/Container';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-import Typography from '@mui/material/Typography';
 import axios from 'axios';
-
 // import { useAuth } from 'src/context/AuthContext';
 import { useSnackbar } from 'notistack';
+import { useState, useEffect, useCallback } from 'react';
+
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
+import { IconButton } from '@mui/material';
+import Container from '@mui/material/Container';
+import TableBody from '@mui/material/TableBody';
+import Pagination from '@mui/material/Pagination';
+import Typography from '@mui/material/Typography';
+import TableContainer from '@mui/material/TableContainer';
+
 import { RouterLink } from 'src/routes/components';
 // import { useRouter } from 'src/routes/hooks';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
+import TableNoData from '../employee-table/table-no-data';
+import EmployeeTableRow from '../employee-table/employeee-table-row';
 import EmployeeTableHead from '../employee-table/employee-table-head';
 import EmployeeTableToolbar from '../employee-table/employee-table-toolbar';
-import EmployeeTableRow from '../employee-table/employeee-table-row';
-import TableNoData from '../employee-table/table-no-data';
 
 // ----------------------------------------------------------------------
 const HEADER_LABEL =[
@@ -52,7 +52,7 @@ export default function EmployeeList() {
 
   const [selected, setSelected] = useState([]);
 
-  const [filterField, setFilterField] =useState('ep.employee_name');
+  const [filterField, setFilterField] =useState('ep.employee_id');
 
   const [orderBy, setOrderBy] = useState('ep.id');
 
@@ -82,13 +82,13 @@ export default function EmployeeList() {
             if (response.data.status) {
               setEmployees(response.data.results);
               setInfo(response.data.info);
-              console.log(response.data.results);
+              // console.log(response.data.results);
             }
           })
           .catch((error) => {
             setEmployees([]);
             setInfo({});
-            enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+            // enqueueSnackbar(error.response.data.message, { variant: 'error', action });
           });
       } catch (error) {
         setEmployees([]);
