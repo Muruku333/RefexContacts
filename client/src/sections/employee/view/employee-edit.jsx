@@ -1,27 +1,28 @@
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import { useRef, useState, useEffect, forwardRef } from 'react';
 
-import Slide from "@mui/material/Slide";
-import Dialog from "@mui/material/Dialog";
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
 import Grid from '@mui/material/Unstable_Grid2';
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import {
   Box,
   Card,
   Stack,
   Button,
   styled,
+  Avatar,
   Tooltip,
   Container,
   TextField,
   IconButton,
   Typography,
-  Autocomplete
+  Autocomplete,
 } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
@@ -62,236 +63,264 @@ const PhotoStack = styled(Stack)(({ theme, isError, selectedPhoto }) => ({
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
+// Function to format the mobile number
+const formatMobileNumber = (number) => {
+  if (!number) {
+    return '+91 ';
+  }
+  if (number.length > 5) {
+    return `+91 ${number.slice(0, 5)} ${number.slice(5)}`;
+  }
+  return `+91 ${number}`;
+};
 
-export default function EmployeeEdit(){
+export default function EmployeeEdit() {
+  const { employeeId } = useParams();
 
-    const {employeeId}=useParams();
+  const { user } = useAuth();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const fileInputRef = useRef(null);
+  const router = useRouter();
 
-    const { user } = useAuth();
-    const {enqueueSnackbar, closeSnackbar} = useSnackbar();
-    const fileInputRef = useRef(null);
-    const router = useRouter();
-  
-    const [employeeData, setEmployeeData] = useState({
-      employeeId: '',
-      employeeName: '',
-      designation: "",
-      mobileNumber: "",
-      landline: "",
-      email: '',
-      photo: null,
-      companyId: '',
-      branchId: '',
-      modifiedBy: user.user_id,
-    });
+  const [employeeData, setEmployeeData] = useState({
+    employeeId: '',
+    employeeName: '',
+    designation: '',
+    mobileNumber: '',
+    landline: '',
+    email: '',
+    photo: null,
+    companyId: '',
+    branchId: '',
+    modifiedBy: user.user_id,
+  });
 
-    const [companies, setCompanies] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [selectedPhoto, setSelectedPhoto] = useState(null);
-    const [validationErrors, setValidationErrors] = useState({});
-    const [changeMade,setChangeMade]=useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
+  const [companies, setCompanies] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [changeMade, setChangeMade] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [openPreview, setOpenPreview] = useState(false);
 
-    useEffect(() => {
-      const fetchCompanies = async () => {
-        try {
-          const response = await axios.get('/api/companies');
-          if (response.data.status) {
-            setCompanies(response.data.results);
-          } else {
-            setCompanies([]);
-          }
-        } catch (error) {
-          console.error('Error fetching companies:', error);
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await axios.get('/api/companies');
+        if (response.data.status) {
+          setCompanies(response.data.results);
+        } else {
           setCompanies([]);
         }
-      };
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        setCompanies([]);
+      }
+    };
 
-      const fetchBranches = async(companyId)=>{
-        try {
-          const branchesResponse = await axios.get(`/api/companies/${companyId}`);
-          // console.log(branchesResponse);
-          if (branchesResponse.data.status) {
-            console.log(branchesResponse.data.results[0].company_branches);
-            setBranches(branchesResponse.data.results[0].company_branches);
-          } else {
-            setBranches([]);
-          }
-        } catch (error) {
-          console.error('Error fetching branches:', error);
+    const fetchBranches = async (companyId) => {
+      try {
+        const branchesResponse = await axios.get(`/api/companies/${companyId}`);
+        // console.log(branchesResponse);
+        if (branchesResponse.data.status) {
+          console.log(branchesResponse.data.results[0].company_branches);
+          setBranches(branchesResponse.data.results[0].company_branches);
+        } else {
           setBranches([]);
         }
-      }
-
-      const fetchData = async()=>{
-        try {
-          const response = await axios.get(`/api/employees/${employeeId}`);
-          if (response.data.status) {
-            const data = response.data.results[0];
-            setEmployeeData((prev) => ({
-              ...prev,
-              employeeId: data.employee_id,
-              employeeName: data.employee_name,
-              designation: data.designation,
-              mobileNumber: data.mobile_number,
-              landline: data.landline,
-              email: data.email,
-              photo: data.photo,
-              companyId: data.company.company_id,
-              branchId: data.branch.branch_id,
-            }));
-  
-            // Fetch branches based on the selected company
-            fetchBranches(data.company.company_id);
-          } else {
-            console.error('Error fetching employee data:', response.data.message);
-          }
-        } catch (error) {
-          console.error('Error fetching employee data:', error);
-        }
-      }
-
-      fetchData();
-      fetchCompanies();
-    },[employeeId]);
-
-    useEffect(()=>{
-      setEmployeeData((prev) => {
-        if(branches.length>0){
-          return { ...prev, branchId: branches[0].branch_id};
-        }
-    return prev;
-  });
-},[branches]);
-  
-    const handleInputChange = (field, value) => {
-      const updatedEmployeeData = { ...employeeData };
-      updatedEmployeeData[field] = value;
-      setEmployeeData(updatedEmployeeData);
-      setValidationErrors({});
-      setChangeMade(true);
-    };
-  
-    const handleClick = () => {
-      fileInputRef.current.click();
-    };
-  
-    const handleFileChange = (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      setSelectedPhoto(file);
-      console.log(file);
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (e) => {
-        handleInputChange('photo', e.target.result);
-        // setEmployeeData((prev) => {
-        //   return { ...prev, photo: e.target.result };
-        // });
-        // setPhotoB64(e.target.result);
-        // console.log(e.target.result)
-      };
-    };
-  
-    const handleClickAlert = () => {
-      setOpenAlert(!openAlert);
-    };
-  
-    const validate = () => {
-      const errors = {};
-  
-      if (!employeeData.companyId) errors.companyId = 'Company Name is required.';
-      if (!employeeData.branchId) errors.branchId = 'Branch Name is required.';
-      if (!employeeData.employeeId) errors.employeeId = 'Employeee ID is required.';
-      if (!employeeData.employeeName) errors.employeeName = 'Employee Name is required.';
-      if (!employeeData.email) errors.email = 'Email is required.';
-      if (!employeeData.photo) errors.photo = 'Photo is required.';
-  
-      return errors;
-    };
-  
-    const action = snackbarId => (
-      <IconButton color='inherit' onClick={()=>closeSnackbar(snackbarId)}>
-        <Iconify icon="eva:close-outline"/>
-      </IconButton>
-    )
-  
-    const handleSubmitAircraft = async (event) => {
-      // console.log('It worked');
-      const errors = validate();
-      if (Object.keys(errors).length > 0) {
-        setValidationErrors(errors);
-        return;
-      }
-      try {
-        await axios
-          .put(
-            `/api/employees/${employeeId}`,
-            employeeData
-          )
-          .then((response) => {
-            console.log(response);
-            if(response.data.status){
-              // setEmployeeData({
-              //   employeeId: '',
-              //   employeeName: '',
-              //   designation: '',
-              //   mobileNumber: '',
-              //   landline: '',
-              //   email: '',
-              //   photo: null,
-              //   companyId: '',
-              //   branchId: '',
-              //   createdBy: user.user_id,
-              // });
-              // setSelectedPhoto(null);
-              // setBranches([]);
-              router.push('/employees/list');
-              enqueueSnackbar(response.data.message,{variant:response.data.status?"success":"error",action,});
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-            // if(error.response.data.message==="Validation Failed"){
-            //   const {errors=[]} = error.response.data.results;
-            //   errors.map((_er)=>{
-  
-            //   })
-            // }
-            enqueueSnackbar(error.response.data.message,{variant:"error",action,});
-          });
       } catch (error) {
-        enqueueSnackbar(error.message,{variant:"error",action,});
+        console.error('Error fetching branches:', error);
+        setBranches([]);
       }
     };
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/employees/${employeeId}`);
+        if (response.data.status) {
+          const data = response.data.results[0];
+          setEmployeeData((prev) => ({
+            ...prev,
+            employeeId: data.employee_id,
+            employeeName: data.employee_name,
+            designation: data.designation,
+            mobileNumber: data.mobile_number,
+            landline: data.landline,
+            email: data.email,
+            photo: data.photo,
+            companyId: data.company.company_id,
+            branchId: data.branch.branch_id,
+          }));
+
+          // Fetch branches based on the selected company
+          fetchBranches(data.company.company_id);
+        } else {
+          console.error('Error fetching employee data:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    fetchData();
+    fetchCompanies();
+  }, [employeeId]);
+
+  useEffect(() => {
+    setEmployeeData((prev) => {
+      if (branches.length > 0) {
+        return { ...prev, branchId: branches[0].branch_id };
+      }
+      return prev;
+    });
+  }, [branches]);
+
+  const handleInputChange = (field, value) => {
+    const updatedEmployeeData = { ...employeeData };
+    updatedEmployeeData[field] = value;
+    setEmployeeData(updatedEmployeeData);
+    setValidationErrors({});
+    setChangeMade(true);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setSelectedPhoto(file);
+    console.log(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      handleInputChange('photo', e.target.result);
+      // setEmployeeData((prev) => {
+      //   return { ...prev, photo: e.target.result };
+      // });
+      // setPhotoB64(e.target.result);
+      // console.log(e.target.result)
+    };
+  };
+
+  const handleClickAlert = () => {
+    setOpenAlert(!openAlert);
+  };
+
+  const handleClickOpenPreview = () => {
+    setOpenPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setOpenPreview(false);
+  };
+
+  const validate = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!employeeData.companyId) errors.companyId = 'Company Name is required.';
+    if (!employeeData.branchId) errors.branchId = 'Branch Name is required.';
+    if (!employeeData.employeeId) errors.employeeId = 'Employeee ID is required.';
+    if (!employeeData.employeeName) errors.employeeName = 'Employee Name is required.';
+    if (!employeeData.designation) errors.designation = 'Designation is required';
+    if (employeeData.mobileNumber.length !== 10)
+      errors.mobileNumber = 'Mobile Number should be 10 digits';
+    if (!emailRegex.test(employeeData.email)) errors.email = 'Email should be valid format.';
+    if (!employeeData.email) errors.email = 'Email is required.';
+    if (!employeeData.photo) errors.photo = 'Photo is required.';
+    if (
+      employeeData.landline &&
+      !(employeeData.landline.length >= 10 && employeeData.landline.length <= 11)
+    )
+      errors.landline = 'Landline should be 10 to 11 digits';
+
+    return errors;
+  };
+
+  const action = (snackbarId) => (
+    <IconButton color="inherit" onClick={() => closeSnackbar(snackbarId)}>
+      <Iconify icon="eva:close-outline" />
+    </IconButton>
+  );
+
+  const handleSubmitAircraft = async (event) => {
+    // console.log('It worked');
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    try {
+      await axios
+        .put(`/api/employees/${employeeId}`, employeeData)
+        .then((response) => {
+          console.log(response);
+          if (response.data.status) {
+            // setEmployeeData({
+            //   employeeId: '',
+            //   employeeName: '',
+            //   designation: '',
+            //   mobileNumber: '',
+            //   landline: '',
+            //   email: '',
+            //   photo: null,
+            //   companyId: '',
+            //   branchId: '',
+            //   createdBy: user.user_id,
+            // });
+            // setSelectedPhoto(null);
+            // setBranches([]);
+            router.push('/employees/list');
+            enqueueSnackbar(response.data.message, {
+              variant: response.data.status ? 'success' : 'error',
+              action,
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          // if(error.response.data.message==="Validation Failed"){
+          //   const {errors=[]} = error.response.data.results;
+          //   errors.map((_er)=>{
+
+          //   })
+          // }
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
+    } catch (error) {
+      enqueueSnackbar(error.message, { variant: 'error', action });
+    }
+  };
 
   return (
     <Container>
-    <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-      <Typography variant="h4">Edit Employee {employeeId}</Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+        <Typography variant="h4">Edit Employee {employeeId}</Typography>
 
-      <Stack direction="row" alignItems="center" gap={3}>
-
-      <Button
-          onClick={()=>{
-            if(changeMade){
-              handleClickAlert();
-            }else{
-              router.push('/employees/list');
-            }
-          }}
+        <Stack direction="row" alignItems="center" gap={3}>
+          <Button
+            onClick={() => {
+              if (changeMade) {
+                handleClickAlert();
+              } else {
+                router.push('/employees/list');
+              }
+            }}
             // href="/employees/list"
             variant="contained"
             color="error"
             // component={RouterLink}
             startIcon={<Iconify icon="eva:arrow-back-fill" />}
-          >        Back to list
-      </Button>
-
+          >
+            {' '}
+            Back to list
+          </Button>
+        </Stack>
       </Stack>
-    </Stack>
 
-    <Box flexGrow={1}>
+      <Box flexGrow={1}>
         <Card>
           <Box p={5} sx={{ flexGrow: 1 }}>
             <Grid container spacing={5} columns={{ xs: 4, sm: 12, md: 12 }}>
@@ -353,6 +382,31 @@ export default function EmployeeEdit(){
                           <Typography display="block" textAlign="center" variant="body1">
                             {selectedPhoto.name}
                           </Typography>
+                        </Box>
+                      )}
+                      <Typography display="block" textAlign="center" variant="caption">
+                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                        <br />
+                        max size of 3.1 MB
+                      </Typography>
+                      {selectedPhoto && (
+                        <Stack
+                          direction="row"
+                          gap={3}
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <Tooltip title="Preview Photo" placement="bottom">
+                            <IconButton
+                              aria-label="preview-photo"
+                              size="small"
+                              color="primary"
+                              onClick={handleClickOpenPreview}
+                            >
+                              <Iconify icon="solar:gallery-circle-bold" />
+                            </IconButton>
+                          </Tooltip>
                           <Tooltip title="Remove Photo" placement="right">
                             <IconButton
                               aria-label="delete"
@@ -366,13 +420,8 @@ export default function EmployeeEdit(){
                               <Iconify icon="solar:gallery-remove-bold" />
                             </IconButton>
                           </Tooltip>
-                        </Box>
+                        </Stack>
                       )}
-                      <Typography display="block" textAlign="center" variant="caption">
-                        Allowed *.jpeg, *.jpg, *.png, *.gif
-                        <br />
-                        max size of 3.1 MB
-                      </Typography>
                     </Stack>
                   </Box>
                 </Stack>
@@ -469,6 +518,7 @@ export default function EmployeeEdit(){
                 <TextField
                   id="designation"
                   fullWidth
+                  required
                   label="Designation"
                   value={employeeData.designation}
                   onChange={(event) => {
@@ -482,10 +532,15 @@ export default function EmployeeEdit(){
                 <TextField
                   id="mobile_number"
                   fullWidth
+                  required
                   label="Mobile Number"
-                  value={employeeData.mobileNumber}
+                  value={formatMobileNumber(employeeData.mobileNumber)}
                   onChange={(event) => {
-                    handleInputChange('mobileNumber', event.target.value);
+                    const { value } = event.target;
+                    const number = value.replace(/\D/g, '').slice(2);
+                    if (number.length <= 10) {
+                      handleInputChange('mobileNumber', number);
+                    }
                   }}
                   error={Boolean(validationErrors.mobileNumber)}
                   helperText={validationErrors.mobileNumber}
@@ -498,7 +553,11 @@ export default function EmployeeEdit(){
                   label="Landline"
                   value={employeeData.landline}
                   onChange={(event) => {
-                    handleInputChange('landline', event.target.value);
+                    const { value } = event.target;
+                    const number = value.replace(/\D/g, '');
+                    if (number.length <= 11) {
+                      handleInputChange('landline', number);
+                    }
                   }}
                   error={Boolean(validationErrors.landline)}
                   helperText={validationErrors.landline}
@@ -521,31 +580,16 @@ export default function EmployeeEdit(){
               <Grid xs={4} sm={6} md={6} />
               <Grid xs={4} sm={6} md={6}>
                 <Grid container spacing={5} columns={{ xs: 4, sm: 6, md: 6 }}>
+                  <Grid xs={2} sm={3} md={3} />
                   <Grid xs={2} sm={3} md={3}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="success"
-                      onClick={handleSubmitAircraft}
-                    >
-                      Update Employee
-                    </Button>
-                  </Grid>
-                  <Grid xs={2} sm={3} md={3}>
-                  <>
+                    <>
                       <Button
                         fullWidth
                         variant="contained"
-                        color="error"
-                         onClick={()=>{
-                          if(changeMade){
-                            handleClickAlert();
-                          }else{
-                            router.back();
-                          }
-                        }}
+                        color="success"
+                        onClick={handleSubmitAircraft}
                       >
-                        Close
+                        Update&nbsp;&&nbsp;Close
                       </Button>
                       <Dialog
                         open={openAlert}
@@ -557,8 +601,7 @@ export default function EmployeeEdit(){
                         <DialogTitle>Are you sure ?</DialogTitle>
                         <DialogContent>
                           <DialogContentText id="alert-dialog-slide-description">
-                            Created data and Changes you where made can&apos;t be
-                            save..!
+                            Created data and Changes you where made can&apos;t be save..!
                           </DialogContentText>
                         </DialogContent>
                         <DialogActions>
@@ -576,13 +619,95 @@ export default function EmployeeEdit(){
                       </Dialog>
                     </>
                   </Grid>
+                  {/* <Grid xs={2} sm={3} md={3}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="error"
+                         onClick={()=>{
+                          if(changeMade){
+                            handleClickAlert();
+                          }else{
+                            router.back();
+                          }
+                        }}
+                      >
+                        Close
+                      </Button>
+                  </Grid> */}
                 </Grid>
               </Grid>
             </Grid>
           </Box>
         </Card>
       </Box>
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        open={openPreview}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClosePreview}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        {selectedPhoto && (
+          <>
+            <DialogTitle sx={{ ml: 0, mr: 3, p: 2 }} id="customized-dialog-title">
+              {selectedPhoto.name}
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleClosePreview}
+              color="error"
+              sx={{
+                position: 'absolute',
+                right: 11,
+                top: 11,
+              }}
+            >
+              <Iconify icon="eva:close-outline" />
+            </IconButton>
+          </>
+        )}
 
+        <DialogContent>
+          {/* <DialogContentText>Are you sure want to delete?</DialogContentText> */}
+          <Stack direction="row" display="flex" justifyContent="center" alignItems="center">
+            <Box
+              sx={{
+                width: 160,
+                height: 160,
+                borderRadius: '50%',
+                background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+                padding: '3px', // Adjust padding to control border width
+                display: 'inline-block',
+                // ...bgGradient({
+                //   direction: '90deg',
+                //   startColor: '#2879b6',
+                //   middleColor: '#7dc244',
+                //   endColor: '#ee6a31',
+                //   // color: alpha(theme.palette.background.default, 0.9),
+                // }),
+              }}
+            >
+              <Avatar
+                alt="Employee Photo"
+                src={employeeData.photo}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                }}
+              />
+            </Box>
+          </Stack>
+        </DialogContent>
+        {/* <DialogActions>
+          <Button variant="outlined" onClick={handleClosePreview}>
+            Cancel
+          </Button>
+        </DialogActions> */}
+      </Dialog>
     </Container>
   );
 }

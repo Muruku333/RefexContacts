@@ -15,6 +15,7 @@ import {
   Stack,
   Button,
   styled,
+  Avatar,
   Tooltip,
   Container,
   TextField,
@@ -61,6 +62,17 @@ const PhotoStack = styled(Stack)(({ theme, isError, selectedPhoto }) => ({
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
+// Function to format the mobile number
+const formatMobileNumber = (number) => {
+  if (!number) {
+    return '+91 ';
+  }
+  if (number.length > 5) {
+    return `+91 ${number.slice(0, 5)} ${number.slice(5)}`;
+  }
+  return `+91 ${number}`;
+};
+
 export default function EmployeeCreate() {
   const { user } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -71,7 +83,7 @@ export default function EmployeeCreate() {
     employeeId: '',
     employeeName: '',
     designation: null,
-    mobileNumber: null,
+    mobileNumber: '',
     landline: null,
     email: '',
     photo: null,
@@ -85,6 +97,7 @@ export default function EmployeeCreate() {
   const [validationErrors, setValidationErrors] = useState({});
   const [changeMade, setChangeMade] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
+  const [openPreview, setOpenPreview] = useState(false);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -141,17 +154,34 @@ export default function EmployeeCreate() {
     setOpenAlert(!openAlert);
   };
 
+  const handleClickOpenPreview = () => {
+    setOpenPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setOpenPreview(false);
+  };
+
   const validate = () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!employeeData.companyId) errors.companyId = 'Company Name is required.';
     if (!employeeData.branchId) errors.branchId = 'Branch Name is required.';
     if (!employeeData.employeeId) errors.employeeId = 'Employeee ID is required.';
     if (!employeeData.employeeName) errors.employeeName = 'Employee Name is required.';
     if (!employeeData.designation) errors.designation = 'Designation is required';
+    if (employeeData.mobileNumber.length !== 10)
+      errors.mobileNumber = 'Mobile Number should be 10 digits';
     if (!employeeData.mobileNumber) errors.mobileNumber = 'Mobile Number is required';
+    if (!emailRegex.test(employeeData.email)) errors.email = 'Email should be valid format.';
     if (!employeeData.email) errors.email = 'Email is required.';
     if (!employeeData.photo) errors.photo = 'Photo is required.';
+    if (
+      employeeData.landline &&
+      !(employeeData.landline.length >= 10 && employeeData.landline.length <= 11)
+    )
+      errors.landline = 'Landline should be 10 to 11 digits';
 
     return errors;
   };
@@ -265,7 +295,7 @@ export default function EmployeeCreate() {
                       {selectedPhoto && (
                         <Box
                           component="img"
-                          // alt="Crew Photo"
+                          alt="Employee Photo"
                           src={employeeData.photo}
                           sx={{
                             overflow: 'hidden',
@@ -298,7 +328,32 @@ export default function EmployeeCreate() {
                           <Typography display="block" textAlign="center" variant="body1">
                             {selectedPhoto.name}
                           </Typography>
-                          <Tooltip title="Remove Photo" placement="right">
+                        </Box>
+                      )}
+                      <Typography display="block" textAlign="center" variant="caption">
+                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                        <br />
+                        max size of 3.1 MB
+                      </Typography>
+                      {selectedPhoto && (
+                        <Stack
+                          direction="row"
+                          gap={3}
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <Tooltip title="Preview Photo" placement="bottom">
+                            <IconButton
+                              aria-label="preview-photo"
+                              size="small"
+                              color="primary"
+                              onClick={handleClickOpenPreview}
+                            >
+                              <Iconify icon="solar:gallery-circle-bold" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Remove Photo" placement="bottom">
                             <IconButton
                               aria-label="delete"
                               size="small"
@@ -311,13 +366,8 @@ export default function EmployeeCreate() {
                               <Iconify icon="solar:gallery-remove-bold" />
                             </IconButton>
                           </Tooltip>
-                        </Box>
+                        </Stack>
                       )}
-                      <Typography display="block" textAlign="center" variant="caption">
-                        Allowed *.jpeg, *.jpg, *.png, *.gif
-                        <br />
-                        max size of 3.1 MB
-                      </Typography>
                     </Stack>
                   </Box>
                 </Stack>
@@ -433,9 +483,13 @@ export default function EmployeeCreate() {
                   fullWidth
                   required
                   label="Mobile Number"
-                  value={employeeData.mobileNumber}
+                  value={formatMobileNumber(employeeData.mobileNumber)}
                   onChange={(event) => {
-                    handleInputChange('mobileNumber', event.target.value);
+                    const { value } = event.target;
+                    const number = value.replace(/\D/g, '').slice(2);
+                    if (number.length <= 10) {
+                      handleInputChange('mobileNumber', number);
+                    }
                   }}
                   error={Boolean(validationErrors.mobileNumber)}
                   helperText={validationErrors.mobileNumber}
@@ -448,7 +502,11 @@ export default function EmployeeCreate() {
                   label="Landline"
                   value={employeeData.landline}
                   onChange={(event) => {
-                    handleInputChange('landline', event.target.value);
+                    const { value } = event.target;
+                    const number = value.replace(/\D/g, '');
+                    if (number.length <= 11) {
+                      handleInputChange('landline', number);
+                    }
                   }}
                   error={Boolean(validationErrors.landline)}
                   helperText={validationErrors.landline}
@@ -531,6 +589,73 @@ export default function EmployeeCreate() {
           </Box>
         </Card>
       </Box>
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        open={openPreview}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClosePreview}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        {selectedPhoto && (
+          <>
+            <DialogTitle sx={{ ml: 0, mr: 3, p: 2 }} id="customized-dialog-title">
+              {selectedPhoto.name}
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleClosePreview}
+              color="error"
+              sx={{
+                position: 'absolute',
+                right: 11,
+                top: 11,
+              }}
+            >
+              <Iconify icon="eva:close-outline" />
+            </IconButton>
+          </>
+        )}
+
+        <DialogContent>
+          {/* <DialogContentText>Are you sure want to delete?</DialogContentText> */}
+          <Stack direction="row" display="flex" justifyContent="center" alignItems="center">
+            <Box
+              sx={{
+                width: 160,
+                height: 160,
+                borderRadius: '50%',
+                background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+                padding: '3px', // Adjust padding to control border width
+                display: 'inline-block',
+                // ...bgGradient({
+                //   direction: '90deg',
+                //   startColor: '#2879b6',
+                //   middleColor: '#7dc244',
+                //   endColor: '#ee6a31',
+                //   // color: alpha(theme.palette.background.default, 0.9),
+                // }),
+              }}
+            >
+              <Avatar
+                alt="Employee Photo"
+                src={employeeData.photo}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                }}
+              />
+            </Box>
+          </Stack>
+        </DialogContent>
+        {/* <DialogActions>
+          <Button variant="outlined" onClick={handleClosePreview}>
+            Cancel
+          </Button>
+        </DialogActions> */}
+      </Dialog>
     </Container>
   );
 }

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
@@ -13,11 +12,11 @@ import Footer from './footer';
 // ----------------------------------------------------------------------
 
 export default function DashboardLayout({ children }) {
-  const [openNav, setOpenNav] = useState(false);
+  // const [openNav, setOpenNav] = useState(false);
 
   return (
     <>
-      <Header onOpenNav={() => setOpenNav(true)} />
+      <Header />
 
       <Box
         sx={{
@@ -33,7 +32,7 @@ export default function DashboardLayout({ children }) {
       {/* <Stack flexDirection='column' justifyContent='center' alignItems='center'>
       <QRCode value='https://contact.refex.group/empvcard/2055' logoImage='/assets/Refex-Logo.png' logoWidth={72} logoHeight={22} size={200} qrStyle='dots' eyeRadius={10} removeQrCodeBehindLogo logoPadding={1}/>
       </Stack> */}
-      <Footer/>
+      <Footer />
     </>
   );
 }

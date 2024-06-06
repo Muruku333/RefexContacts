@@ -40,7 +40,7 @@ const HEADER_LABEL = [
   { id: 'pr.request_id', label: 'Request ID' },
   { id: 'total_employees', label: 'Total Employees' },
   { id: 'cu.email', label: 'Created By' },
-  { id: 'mu.email', label: 'Modified By' },
+  { id: 'cu.created_at', label: 'Created At' },
   // { id: 'landline', label: 'Landline', align: 'center' },
   { id: 'pr.status', label: 'Status' },
   { id: 'menu' },
@@ -177,7 +177,7 @@ export default function PrintRequestList() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = printRequests.map((n) => n.rerquest_id);
+      const newSelecteds = printRequests.map((n) => n.request_id);
       setSelected(newSelecteds);
       return;
     }
@@ -225,7 +225,7 @@ export default function PrintRequestList() {
   //   filterName,
   // });
 
-  const notFound = !dataFiltered.length && !!filterName;
+  // const notFound = !dataFiltered.length && !!filterName;
 
   return (
     <Container>
@@ -236,7 +236,7 @@ export default function PrintRequestList() {
           href="/employees/list"
           variant="contained"
           component={RouterLink}
-          color="error"
+          // color="error"
           startIcon={<Iconify icon="eva:arrow-back-fill" />}
         >
           To Employees List
@@ -280,7 +280,7 @@ export default function PrintRequestList() {
           <StyledTab
             icon={
               <Label color="success" variant={tapValue === 3 ? 'filled' : 'soft'}>
-              {info.approved}
+                {info.approved}
               </Label>
             }
             iconPosition="end"
@@ -292,6 +292,9 @@ export default function PrintRequestList() {
           numSelected={selected.length}
           filterName={filterName}
           onFilterName={handleFilterByName}
+          selectedIDS={selected}
+          setSelectedIDS={setSelected}
+          setRefresh={setRefresh}
         />
 
         <Scrollbar>
@@ -315,7 +318,7 @@ export default function PrintRequestList() {
                       requestId={row.request_id}
                       printEmployees={row.print_employees}
                       createdBy={row.created.email}
-                      modifiedBy={row.modified.email}
+                      createdAt={new Date(row.created.created_at).toLocaleString('en-IN')}
                       status={row.status}
                       setRefresh={setRefresh}
                       selected={selected.indexOf(row.request_id) !== -1}
@@ -329,26 +332,26 @@ export default function PrintRequestList() {
                 />
 
                 {/* {notFound && <TableNoData query={filterName} />} */}
-                {!(dataFiltered.length>0)&&(
-                                            <TableRow sx={{height:300}}>
-                                            <TableCell colSpan={13}>
-                                              <Stack spacing={1}>
-                                                <Box
-                                                  component="img"
-                                                  src="/assets/icons/ic_content.svg"
-                                                  sx={{ height: 120, mx: "auto" }}
-                                                />
-                                                <Typography
-                                                  textAlign="center"
-                                                  variant="subtitle1"
-                                                  color="text.secondary"
-                                                  component="span"
-                                                >
-                                                  No Data
-                                                </Typography>
-                                              </Stack>
-                                            </TableCell>
-                                          </TableRow>
+                {!(dataFiltered.length > 0) && (
+                  <TableRow sx={{ height: 300 }}>
+                    <TableCell colSpan={13}>
+                      <Stack spacing={1}>
+                        <Box
+                          component="img"
+                          src="/assets/icons/ic_content.svg"
+                          sx={{ height: 120, mx: 'auto' }}
+                        />
+                        <Typography
+                          textAlign="center"
+                          variant="subtitle1"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          No Data
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

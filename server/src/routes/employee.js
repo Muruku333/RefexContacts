@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const EmployeeController = require("../controllers/employee");
 const auth = require("../middlewares/auth");
+const userTypes = require("../utils/userTypes");
 const validation = require("../middlewares/employeeValidator");
 
 const router = express.Router();
@@ -53,8 +54,16 @@ router
     validation.updateEmployeeData,
     EmployeeController.updateEmployeeByEmployeeId
   )
-  .delete(auth.authCheck, EmployeeController.deleteEmployeeByEmployeeId)
   .patch(auth.authCheck, EmployeeController.updateActiveEmployeeByEmployeeId);
+// .delete(
+//   auth.authCheck,
+//   // auth.authAllowTypes([userTypes.Admin, userTypes.SuperAdmin]),
+//   EmployeeController.deleteEmployeeByEmployeeId
+// )
+
+router
+  .route("/delete_employees")
+  .post(auth.authCheck, EmployeeController.deleteEmployeeByEmployeeId);
 
 router
   .route("/vcard/:employee_id")

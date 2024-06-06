@@ -42,7 +42,7 @@ export default function EmployeeView() {
       google_map_link: '',
     },
   });
-  const [refresh, setRefresh]=useState(0);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +58,7 @@ export default function EmployeeView() {
     };
 
     fetchData();
-  }, [employeeId,refresh]);
+  }, [employeeId, refresh]);
 
   const action = useCallback(
     (snackbarId) => (
@@ -69,26 +69,29 @@ export default function EmployeeView() {
     [closeSnackbar]
   );
 
-  const handleClickActiveChange = () =>{
+  const handleClickActiveChange = () => {
     try {
-      axios.patch(`/api/employees/${employeeId}?active=${employee.is_active?'0':'1'}`).then((response)=>{
-        if(response.data.status){
-          enqueueSnackbar(response.data.message, { variant: 'success', action });
-          // router.push('/employees/list');
-          setRefresh((prev)=>prev+1);
-        }
-      }).catch((error)=>{
-        enqueueSnackbar(error.response.data.message, { variant: 'error', action })
-      })
+      axios
+        .patch(`/api/employees/${employeeId}?active=${employee.is_active ? '0' : '1'}`)
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'success', action });
+            // router.push('/employees/list');
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error', action });
     }
-  }
+  };
 
   const downloadQRCode = () => {
     if (!qrRef.current) return;
 
-    html2canvas(qrRef.current,{scale:2})
+    html2canvas(qrRef.current, { scale: 2 })
       .then((canvas) => {
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
@@ -102,119 +105,149 @@ export default function EmployeeView() {
 
   const renderLogo = (
     <Box
-    display='flex'
-    justifyContent='center'
-    alignItems='center'
-    sx={{
-      // zIndex: 9,
-      // top:8,
-      verticalAlign:"middle"
-    }}
-    >
-          <Box
-      component="img"
-      alt="Company Logo"
-      src={employee.company.company_logo}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
       sx={{
-        
-        // top: 30,
-        // left: 150,
-        // overflow: 'hidden',
-        // position: 'absolute',
-        // verticalAlign: 'bottom',
-        // display: 'inline-block',
-        height: '80px',
+        // zIndex: 9,
+        // top:8,
+        verticalAlign: 'middle',
       }}
-      // sx={{
+    >
+      <Box
+        component="img"
+        alt="Company Logo"
+        src={employee.company.company_logo}
+        sx={{
+          // top: 30,
+          // left: 150,
+          // overflow: 'hidden',
+          // position: 'absolute',
+          // verticalAlign: 'bottom',
+          // display: 'inline-block',
+          height: '80px',
+        }}
+        // sx={{
 
-      //   // width: 150,
-      //   // height: 150,
-      //   position: 'absolute',
-      // }}
-    />
+        //   // width: 150,
+        //   // height: 150,
+        //   position: 'absolute',
+        // }}
+      />
     </Box>
   );
 
+  // const renderAvatar = (
+  //   <Box
+  //     sx={{
+  //       zIndex: 9,
+  //       mt: 5,
+  //       // top: 150,
+  //       // left: 150,
+  //       // position: 'absolute',
+  //       display: 'flex',
+  //       justifyContent: 'center',
+  //       alignItems: 'center',
+  //       // left: (theme) => theme.spacing(3),
+  //       // bottom: (theme) => theme.spacing(-2),
+  //       // ...((latestPostLarge || latestPost) && {
+  //       //   zIndex: 9,
+  //       //   top: 24,
+  //       //   left: 24,
+  //       //   width: 40,
+  //       //   height: 40,
+  //       // }),
+  //     }}
+  //   >
+  //     <Avatar
+  //       alt={employee.employee_name}
+  //       src={employee.photo}
+  //       sx={{
+  //         width: 150,
+  //         height: 150,
+  //       }}
+  //     />
+  //   </Box>
+  // );
+
   const renderAvatar = (
-    <Box
-    sx={{
-      zIndex: 9,
-      mt:5,
-      // top: 150,
-      // left: 150,
-      // position: 'absolute',
-      display:'flex',
-      justifyContent:'center',
-      alignItems:'center',
-      // left: (theme) => theme.spacing(3),
-      // bottom: (theme) => theme.spacing(-2),
-      // ...((latestPostLarge || latestPost) && {
-      //   zIndex: 9,
-      //   top: 24,
-      //   left: 24,
-      //   width: 40,
-      //   height: 40,
-      // }),
-    }}
+    <Stack
+      direction="row"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      sx={{ mt: 5 }}
     >
-    <Avatar
-      alt={employee.employee_name}
-      src={employee.photo}
-      sx={{
-        width: 150,
-        height: 150,
-      }}
-    />
-    </Box>
+      <Box
+        sx={{
+          width: 160,
+          height: 160,
+          borderRadius: '50%',
+          background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+          padding: '3px', // Adjust padding to control border width
+          display: 'inline-block',
+        }}
+      >
+        <Avatar
+          alt={employee.employee_name}
+          src={employee.photo}
+          sx={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+          }}
+        />
+      </Box>
+    </Stack>
   );
 
   const renderName = (
     <Box>
-    <Typography
-      variant="h4"
-      // component="div"
-      sx={{
-        mt:2,
-        textAlign: 'center',
-        color: 'comman.black',
-        // ...((latestPostLarge || latestPost) && {
-        //   // opacity: 0.48,
-        //   color: 'common.black',
-        // }),
-      }}
-    >
-      {employee.employee_name}
-    </Typography>
+      <Typography
+        variant="h4"
+        // component="div"
+        sx={{
+          mt: 2,
+          textAlign: 'center',
+          color: 'comman.black',
+          // ...((latestPostLarge || latestPost) && {
+          //   // opacity: 0.48,
+          //   color: 'common.black',
+          // }),
+        }}
+      >
+        {employee.employee_name}
+      </Typography>
 
-<Typography
-variant="h5"
-// component="div"
-sx={{
-  textAlign: 'center',
-  color: 'comman.black',
-  // ...((latestPostLarge || latestPost) && {
-  //   // opacity: 0.48,
-  //   color: 'common.black',
-  // }),
-}}
->
-{employee.designation}
-</Typography>
-    <Typography
-    variant="h5"
-    // component="div"
-    sx={{
-      textAlign: 'center',
-      color: 'comman.black',
-      // ...((latestPostLarge || latestPost) && {
-      //   // opacity: 0.48,
-      //   color: 'common.black',
-      // }),
-    }}
-  >
-    {employee.company.company_name}
-  </Typography>
-  </Box>
+      <Typography
+        variant="h5"
+        // component="div"
+        sx={{
+          textAlign: 'center',
+          color: 'comman.black',
+          // ...((latestPostLarge || latestPost) && {
+          //   // opacity: 0.48,
+          //   color: 'common.black',
+          // }),
+        }}
+      >
+        {employee.designation}
+      </Typography>
+      <Typography
+        variant="h5"
+        // component="div"
+        sx={{
+          textAlign: 'center',
+          color: 'comman.black',
+          // ...((latestPostLarge || latestPost) && {
+          //   // opacity: 0.48,
+          //   color: 'common.black',
+          // }),
+        }}
+      >
+        {employee.company.company_name}
+      </Typography>
+    </Box>
   );
 
   const renderCover = (
@@ -236,118 +269,116 @@ sx={{
     <Stack
       spacing={2}
       sx={{
-        mt:5,
+        mt: 5,
         color: 'common.black',
       }}
     >
+      <Stack direction="row">
+        <Iconify width={24} icon="ri:whatsapp-fill" sx={{ mr: 1.5 }} />
+        <Link
+          href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
+          color="inherit"
+          variant="subtitle2"
+          underline="hover"
+          target="_blank" // Open in a new tab
+          rel="noopener noreferrer"
+          sx={{
+            // height: 44,
+            overflow: 'hidden',
+            WebkitLineClamp: 2,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            typography: 'subtitle2',
+            // height: 60,
+            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+            // ...((latestPostLarge || latestPost) && {
+            // }),
+          }}
+        >
+          WhatsApp me
+        </Link>
+      </Stack>
 
       <Stack direction="row">
-      <Iconify width={24} icon="ri:whatsapp-fill" sx={{ mr: 1.5 }} />
+        <Iconify width={24} icon="ic:round-email" sx={{ mr: 1.5 }} />
         <Link
-    href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
-      color="inherit"
-      variant="subtitle2"
-      underline="hover"
-      target="_blank"      // Open in a new tab
-      rel="noopener noreferrer" 
-      sx={{
-        // height: 44,
-        overflow: 'hidden',
-        WebkitLineClamp: 2,
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        typography: 'subtitle2', 
-        // height: 60, 
-        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-        // ...((latestPostLarge || latestPost) && {
-        // }),
-      }}
-    >
-      WhatsApp me
-    </Link>
-    </Stack>
+          href={`mailto:${employee.email}`}
+          color="inherit"
+          variant="subtitle2"
+          underline="hover"
+          target="_blank" // Open in a new tab
+          rel="noopener noreferrer"
+          sx={{
+            // height: 44,
+            overflow: 'hidden',
+            WebkitLineClamp: 2,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            typography: 'subtitle2',
+            // height: 60,
+            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+            // ...((latestPostLarge || latestPost) && {
+            color: 'common.black',
+            // }),
+          }}
+        >
+          Email me
+        </Link>
+      </Stack>
 
-    <Stack direction="row">
-    <Iconify width={24} icon="ic:round-email" sx={{ mr: 1.5 }} />
-    <Link
-    href={`mailto:${employee.email}`}
-      color="inherit"
-      variant="subtitle2"
-      underline="hover"
-      target="_blank"      // Open in a new tab
-      rel="noopener noreferrer" 
-      sx={{
-        // height: 44,
-        overflow: 'hidden',
-        WebkitLineClamp: 2,
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        typography: 'subtitle2', 
-        // height: 60, 
-        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-        // ...((latestPostLarge || latestPost) && {
-          color: 'common.black',
-        // }),
-      }}
-    >
-      Email me
-    </Link>
-    </Stack>
+      <Stack direction="row">
+        <Iconify width={24} icon="fluent:globe-search-24-filled" sx={{ mr: 1.5 }} />
+        <Link
+          href={employee.company.company_website}
+          color="inherit"
+          variant="subtitle2"
+          underline="hover"
+          target="_blank" // Open in a new tab
+          rel="noopener noreferrer"
+          sx={{
+            // height: 44,
+            overflow: 'hidden',
+            WebkitLineClamp: 2,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            typography: 'subtitle2',
+            // height: 60,
+            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+            // ...((latestPostLarge || latestPost) && {
+            color: 'common.black',
+            // }),
+          }}
+        >
+          {employee.company.company_website.replace(/^https?:\/\//, '')}
+        </Link>
+      </Stack>
 
-    <Stack direction="row">
-    <Iconify width={24} icon="fluent:globe-search-24-filled" sx={{ mr: 1.5}} />
-    <Link
-    href={employee.company.company_website}
-      color="inherit"
-      variant="subtitle2"
-      underline="hover"
-      target="_blank"      // Open in a new tab
-      rel="noopener noreferrer" 
-      sx={{
-        // height: 44,
-        overflow: 'hidden',
-        WebkitLineClamp: 2,
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        typography: 'subtitle2', 
-        // height: 60, 
-        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-        // ...((latestPostLarge || latestPost) && {
-          color: 'common.black',
-        // }),
-      }}
-    >
-      {employee.company.company_website.replace(/^https?:\/\//, '')}
-    </Link>
-    </Stack>
-
-    <Stack direction="row">
-    <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
-    <Link
-    href={employee.branch.google_map_link}
-      color="inherit"
-      variant="subtitle2"
-      underline="hover"
-      target="_blank"      // Open in a new tab
-      rel="noopener noreferrer" 
-      sx={{
-        // height: 44,
-        overflow: 'hidden',
-        WebkitLineClamp: 2,
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        typography: 'subtitle2', 
-        // height: 60, 
-        // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-        // ...((latestPostLarge || latestPost) && {
-          color: 'common.black',
-        // }),
-      }}
-    >
-      {employee.branch.branch_address}
-    </Link>
-</Stack>
-
+      <Stack direction="row">
+        <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
+        <Link
+          href={employee.branch.google_map_link}
+          color="inherit"
+          variant="subtitle2"
+          underline="hover"
+          target="_blank" // Open in a new tab
+          rel="noopener noreferrer"
+          sx={{
+            // height: 44,
+            overflow: 'hidden',
+            WebkitLineClamp: 2,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            typography: 'subtitle2',
+            // height: 60,
+            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+            // ...((latestPostLarge || latestPost) && {
+            color: 'common.black',
+            // }),
+          }}
+        >
+          {employee.branch.branch_address}
+        </Link>
+      </Stack>
     </Stack>
   );
 
@@ -374,39 +405,48 @@ sx={{
 
       <Grid container spacing={2} columns={{ xs: 4, sm: 12, md: 12 }} width="100%">
         <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
-          <Card
+          <Box
             sx={{
-              width: 1,
-              maxWidth: 450,
+              width: 460,
               height: '100%',
+              borderRadius: 2,
+              background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+              padding: '5px', // Adjust padding to control border width
+              display: 'inline-block',
             }}
           >
-            <Box
+            <Card
               sx={{
-                //   position: 'relative',
-                // pt: 'calc(100% * 3 / 4)',
-                // ...((latestPostLarge || latestPost) && {
-                pt: 'calc(100% * 4 / 3)',
-                '&:after': {
-                  top: 0,
-                  content: "''",
-                  width: '100%',
-                  height: '100%',
-                  position: 'absolute',
-                  bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
-                },
-                // }),
-                // ...(latestPostLarge && {
-                //   pt: {
-                //     xs: 'calc(100% * 4 / 3)',
-                //     sm: 'calc(100% * 3 / 4.66)',
-                //   },
-                // }),
+                width: '100%',
+                height: '100%',
               }}
             >
-              {/* {renderLogo}
+              <Box
+                sx={{
+                  //   position: 'relative',
+                  // pt: 'calc(100% * 3 / 4)',
+                  // ...((latestPostLarge || latestPost) && {
+                  pt: 'calc(100% * 4 / 3)',
+                  '&:after': {
+                    top: 0,
+                    content: "''",
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
+                  },
+                  // }),
+                  // ...(latestPostLarge && {
+                  //   pt: {
+                  //     xs: 'calc(100% * 4 / 3)',
+                  //     sm: 'calc(100% * 3 / 4.66)',
+                  //   },
+                  // }),
+                }}
+              >
+                {/* {renderLogo}
               {renderAvatar} */}
-              {renderCover}
+                {renderCover}
               </Box>
 
               <Box
@@ -426,9 +466,9 @@ sx={{
                 {renderName}
 
                 {renderLinks}
-                
-            </Box>
-          </Card>
+              </Box>
+            </Card>
+          </Box>
         </Grid>
         <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
           <Card
@@ -440,22 +480,22 @@ sx={{
             }}
           >
             <Stack justifyContent="center" alignItems="center" gap={4}>
-            <Box ref={qrRef} sx={{p:2}}>
-            <Box
-            sx={{border:'3px solid black',borderRadius:3,p:1}}>
-              <QRCode
-                value={`https://contacts.dev.refex.group/vcard/${employeeId}`}
-                logoImage={employee.company.company_logo}
-                logoWidth={70}
-                logoHeight={40}
-                size={200}
-                qrStyle="dots"
-                eyeRadius={10}
-                removeQrCodeBehindLogo
-                // logoPadding={1}
-              />
-</Box>
-</Box>
+              <Box ref={qrRef} sx={{ p: 2 }}>
+                <Box sx={{ border: '3px solid black', borderRadius: 3, p: 1 }}>
+                  <QRCode
+                    value={`https://contacts.dev.refex.group/vcard/${employeeId}`}
+                    logoImage={employee.company.company_logo}
+                    ecLevel="M"
+                    logoWidth={57}
+                    logoHeight={34}
+                    size={200}
+                    qrStyle="dots"
+                    eyeRadius={10}
+                    removeQrCodeBehindLogo
+                    logoPadding={4}
+                  />
+                </Box>
+              </Box>
               <Button
                 fullWidth
                 onClick={downloadQRCode}
@@ -482,8 +522,6 @@ sx={{
                 Edit
               </Button>
 
-
-
               <Button
                 onClick={() => {
                   router.push(`/vcard/${employeeId}`);
@@ -503,12 +541,12 @@ sx={{
                 onClick={handleClickActiveChange}
                 // href="/employees/list"
                 variant="contained"
-                color={employee.is_active?"error":"success"}
+                color={employee.is_active ? 'error' : 'success'}
                 fullWidth
                 // component={RouterLink}
                 startIcon={<Iconify icon="solar:power-bold-duotone" />}
               >
-                {employee.is_active?"Deactivate":"Activate"}
+                {employee.is_active ? 'Deactivate' : 'Activate'}
               </Button>
             </Stack>
           </Card>

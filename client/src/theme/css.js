@@ -100,13 +100,14 @@ export function bgBlur(props) {
 export function bgGradient(props) {
   const direction = props?.direction || 'to bottom';
   const startColor = props?.startColor;
+  const middleColor = props?.middleColor;
   const endColor = props?.endColor;
   const imgUrl = props?.imgUrl;
   const color = props?.color;
 
   if (imgUrl) {
     return {
-      background: `linear-gradient(${direction}, ${startColor || color}, ${
+      background: `linear-gradient(${direction}, ${startColor || color}, ${middleColor || color}, ${
         endColor || color
       }), url(${imgUrl})`,
       backgroundSize: 'cover',

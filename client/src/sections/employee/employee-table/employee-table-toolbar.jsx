@@ -2,24 +2,27 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, forwardRef, useCallback } from 'react';
 
 import {
   Box,
   Stack,
+  Slide,
+  Badge,
   Button,
   Dialog,
   Toolbar,
-  Tooltip,
+  TextField,
   IconButton,
   Typography,
   DialogTitle,
+  Autocomplete,
   DialogActions,
   DialogContent,
   OutlinedInput,
   InputAdornment,
   CircularProgress,
-  DialogContentText
+  DialogContentText,
 } from '@mui/material';
 
 import { fData } from 'src/utils/format-number';
@@ -27,17 +30,25 @@ import { fData } from 'src/utils/format-number';
 import Iconify from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
+const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
+
 export default function EmployeeTableToolbar({
+  onUnselectAll,
   selectedEmployees,
   setSelectedEmployees,
   numSelected,
+  filterBy,
   filterName,
-  onFilterName,
+  filterField,
+  onFilterValue,
+  onFilterField,
+  setRefresh,
 }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const fileInput = useRef(null);
   const [openImport, setOpenImport] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
   const [openProgress, setOpenProgress] = useState(false);
@@ -77,20 +88,27 @@ export default function EmployeeTableToolbar({
         .then((response) => {
           setTimeout(() => {
             console.log(response.data);
-            enqueueSnackbar(`${response.data.message} (Imported Rows: ${response.data.results.successData.length}, Failed Rows: ${response.data.results.failureData.length})`, { variant: 'success', action });
+            enqueueSnackbar(
+              `${response.data.message} (Imported Rows: ${response.data.results.successData.length}, Failed Rows: ${response.data.results.failureData.length})`,
+              { variant: 'success', action }
+            );
             handleCloseProgress();
-            setTimeout(() => {
-              // setListRefresh((prev) => prev + 1);
-            }, 3000);
+            setRefresh((prev) => prev + 1);
+            // setTimeout(() => {
+            //   setRefresh((prev) => prev + 1);
+            // }, 1000);
           }, 3000);
           // Handle success, e.g., show a success message to the user
         })
         .catch((error) => {
           setTimeout(() => {
             console.error('Error uploading file:', error);
-            if(error.response.status===400){
-              enqueueSnackbar(`${error.response.data.message} (Imported Rows: ${error.response.data.results.successData.length}, Failed Rows: ${error.response.data.results.failureData.length})`, { variant: 'error', action });
-            }else{
+            if (error.response.status === 400) {
+              enqueueSnackbar(
+                `${error.response.data.message} (Imported Rows: ${error.response.data.results.successData.length}, Failed Rows: ${error.response.data.results.failureData.length})`,
+                { variant: 'error', action }
+              );
+            } else {
               enqueueSnackbar(error.response.data.message, { variant: 'error', action });
             }
             handleCloseProgress();
@@ -105,15 +123,17 @@ export default function EmployeeTableToolbar({
     }
   };
 
-  const handleClickExport= async()=>{
+  const handleClickExport = async () => {
     try {
       const response = await axios.get('/api/export-employees', { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       saveAs(blob, 'Employees.xlsx');
     } catch (error) {
       enqueueSnackbar(error.response.data.message, { variant: 'error', action });
     }
-  }
+  };
 
   const handleClickFileUpload = () => {
     fileInput.current.click();
@@ -132,6 +152,14 @@ export default function EmployeeTableToolbar({
     setFileInfo(null);
     setSelectedFile(null);
     setOpenImport(false);
+  };
+
+  const handleClickOpenAlert = () => {
+    setOpenAlert(true);
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
   };
 
   const action = useCallback(
@@ -163,6 +191,25 @@ export default function EmployeeTableToolbar({
     }
   };
 
+  const handleClickDelete = () => {
+    try {
+      axios
+        .post('/api/delete_employees', { employee_ids: selectedEmployees })
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'warning', action });
+            setRefresh((prev) => prev + 1);
+            setSelectedEmployees([]);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
+    } catch (error) {
+      enqueueSnackbar(error.message, { variant: 'error', action });
+    }
+  };
+
   return (
     <Toolbar
       sx={{
@@ -170,13 +217,13 @@ export default function EmployeeTableToolbar({
         display: 'flex',
         justifyContent: 'space-between',
         p: (theme) => theme.spacing(0, 1, 0, 3),
-        ...(numSelected > 0 && {
-          color: 'primary.main',
-          bgcolor: 'primary.lighter',
-        }),
+        // ...(numSelected > 0 && {
+        //   color: 'primary.main',
+        //   bgcolor: 'primary.lighter',
+        // }),
       }}
     >
-      {numSelected > 0 ? (
+      {/* {numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
           {numSelected} selected
         </Typography>
@@ -194,15 +241,76 @@ export default function EmployeeTableToolbar({
             </InputAdornment>
           }
         />
-      )}
+      )} */}
+      <Stack direction="row" gap={2}>
+        <Autocomplete
+          disablePortal
+          disableClearable
+          options={filterBy}
+          value={filterBy.find((_fb) => _fb.id === filterField) || null}
+          onChange={(event, newValue) => {
+            if (newValue) onFilterField(newValue.id);
+            else onFilterField();
+          }}
+          sx={{ width: 150 }}
+          renderInput={(params) => <TextField {...params} label="Filter By" />}
+        />
+        <OutlinedInput
+          value={filterName}
+          onChange={onFilterValue}
+          placeholder="Filter..."
+          startAdornment={
+            <InputAdornment position="start">
+              <Iconify
+                icon="eva:search-fill"
+                sx={{ color: 'text.disabled', width: 20, height: 20 }}
+              />
+            </InputAdornment>
+          }
+        />
+      </Stack>
 
       {numSelected > 0 ? (
-        <Stack direction="row" gap={1}>
-          <Tooltip title="Send Print Request">
+        <Stack direction="row" gap={2}>
+          <Button
+            onClick={handleSendPrintRequest}
+            color="success"
+            endIcon={
+              <Badge badgeContent={numSelected} color="success">
+                <Iconify icon="iconamoon:send-fill" />
+              </Badge>
+            }
+          >
+            Send&nbsp;Request
+          </Button>
+          <Button
+            onClick={handleClickOpenAlert}
+            color="error"
+            endIcon={
+              <Badge badgeContent={numSelected} color="error">
+                <Iconify icon="solar:trash-bin-trash-bold-duotone" />
+              </Badge>
+            }
+          >
+            Delete&nbsp;All
+          </Button>
+          <Button
+            onClick={onUnselectAll}
+            endIcon={
+              <Badge badgeContent={numSelected} color="primary">
+                <Iconify icon="eva:close-fill" />
+              </Badge>
+            }
+          >
+            Unselect&nbsp;All
+          </Button>
+          {/* <Tooltip title="Send Print Request">
             <IconButton onClick={handleSendPrintRequest}>
-              <Iconify icon="iconamoon:send-fill" />
+              <Badge badgeContent={numSelected} color="primary">
+                <Iconify icon="iconamoon:send-fill" />
+              </Badge>
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
           {/* <Tooltip title="Delete">
           <IconButton>
             <Iconify icon="eva:trash-2-fill" />
@@ -210,7 +318,7 @@ export default function EmployeeTableToolbar({
         </Tooltip> */}
         </Stack>
       ) : (
-        <Stack direction="row" gap={1}>
+        <Stack direction="row" gap={2}>
           {/* <Button  startIcon={<Iconify icon="solar:eye-bold" />}>
   Columns
 </Button>
@@ -221,8 +329,8 @@ export default function EmployeeTableToolbar({
             Import
           </Button>
           <Button onClick={handleClickExport} startIcon={<Iconify icon="solar:export-bold" />}>
-  Export
-</Button>
+            Export
+          </Button>
         </Stack>
       )}
       <Dialog
@@ -253,12 +361,12 @@ export default function EmployeeTableToolbar({
             onDrop={handleFileDrop}
             onDragOver={handleDragOver}
             sx={{
-              mt:'10px',
+              mt: '10px',
               p: '20px',
               border: '2px dashed #ccc',
-              borderRadius:'5px',
-              textAlign:'center',
-              cursor:'pointer',
+              borderRadius: '5px',
+              textAlign: 'center',
+              cursor: 'pointer',
             }}
           >
             <input
@@ -269,38 +377,38 @@ export default function EmployeeTableToolbar({
               onChange={handleFileChange}
             />
             {fileInfo ? (
-              <Stack direction='column' spacing={1}>
+              <Stack direction="column" spacing={1}>
                 <Box
                   component="img"
-                  src='/assets/files_icons/ic_excel.svg'
+                  src="/assets/files_icons/ic_excel.svg"
                   alt="icon"
                   sx={{ height: 100, mx: 'auto' }}
                 />
-                <Stack direction='column' spacing={1}>
-                  <Typography variant="h6" display='block'>
+                <Stack direction="column" spacing={1}>
+                  <Typography variant="h6" display="block">
                     {fileInfo.name}
                   </Typography>
-                  <Typography variant="body2" display='block'>
+                  <Typography variant="body2" display="block">
                     {`Size:${fData(fileInfo.size)}`}
                   </Typography>
                 </Stack>
               </Stack>
             ) : (
-              <Stack direction='column' spacing={1}>
+              <Stack direction="column" spacing={1}>
                 <Box
                   component="img"
                   src="/assets/illustrations/file_upload.svg"
                   sx={{ height: 100, mx: 'auto' }}
                 />
-                <Stack direction='column' spacing={1}>
-                  <Typography variant="h6" display='block'>
+                <Stack direction="column" spacing={1}>
+                  <Typography variant="h6" display="block">
                     Drop or Select file
                   </Typography>
-                  <Typography variant="body2" display='block'>
+                  <Typography variant="body2" display="block">
                     Drop files here or click
                     <Box
-                      component='span'
-                      mx='4px'
+                      component="span"
+                      mx="4px"
                       sx={{ textDecoration: 'underline', color: 'blue' }}
                     >
                       browse
@@ -314,9 +422,9 @@ export default function EmployeeTableToolbar({
         </DialogContent>
         <DialogActions>
           {fileInfo && (
-              <Button variant="contained" type="submit">
-                Import
-              </Button>
+            <Button variant="contained" type="submit">
+              Import
+            </Button>
           )}
 
           <Button variant="contained" color="error" onClick={handleCloseImport}>
@@ -325,7 +433,7 @@ export default function EmployeeTableToolbar({
         </DialogActions>
       </Dialog>
       <Dialog open={openProgress} onClose={handleCloseProgress}>
-        <DialogTitle>Importing Airport Details...!</DialogTitle>
+        <DialogTitle>Importing Employees...!</DialogTitle>
         <DialogContent>
           <Box
             sx={{ color: 'blue', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -334,14 +442,49 @@ export default function EmployeeTableToolbar({
           </Box>
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        open={openAlert}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleCloseAlert}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure want to delete {numSelected} items?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              handleClickDelete();
+              handleCloseAlert();
+            }}
+          >
+            Delete
+          </Button>
+          <Button variant="outlined" onClick={handleCloseAlert}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Toolbar>
   );
 }
 
 EmployeeTableToolbar.propTypes = {
+  onUnselectAll: PropTypes.func,
   selectedEmployees: PropTypes.array,
   setSelectedEmployees: PropTypes.any,
   numSelected: PropTypes.number,
+  filterBy: PropTypes.array,
   filterName: PropTypes.string,
-  onFilterName: PropTypes.func,
+  filterField: PropTypes.string,
+  onFilterValue: PropTypes.func,
+  onFilterField: PropTypes.func,
+  setRefresh: PropTypes.func,
 };

@@ -7,12 +7,12 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import { IconButton } from '@mui/material';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import { Box, TableRow, TableCell, IconButton } from '@mui/material';
 
 import { RouterLink } from 'src/routes/components';
 // import { useRouter } from 'src/routes/hooks';
@@ -33,7 +33,7 @@ export default function EmployeeInactiveList() {
 
   const [employees, setEmployees] = useState([]);
 
-  const [info, setInfo] = useState({});
+  // const [info, setInfo] = useState({});
 
   const [page, setPage] = useState(0);
 
@@ -69,9 +69,11 @@ export default function EmployeeInactiveList() {
             }
           })
           .catch((error) => {
-            enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+            setEmployees([]);
+            // enqueueSnackbar(error.response.data.message, { variant: 'error', action });
           });
       } catch (error) {
+        setEmployees([]);
         enqueueSnackbar(error.message, { variant: 'error', action });
       }
     };
@@ -155,9 +157,12 @@ export default function EmployeeInactiveList() {
 
       <Card>
         <InactiveTableToolbar
+          selectedEmployees={selected}
+          setSelectedEmployees={setSelected}
           numSelected={selected.length}
           filterName={filterName}
           onFilterName={handleFilterByName}
+          setRefresh={setRefresh}
         />
 
         <Scrollbar>
@@ -184,6 +189,27 @@ export default function EmployeeInactiveList() {
                 ]}
               />
               <TableBody>
+                {dataFiltered.length < 1 && !notFound && (
+                  <TableRow sx={{ height: 300 }}>
+                    <TableCell colSpan={10}>
+                      <Stack spacing={1}>
+                        <Box
+                          component="img"
+                          src="/assets/icons/ic_content.svg"
+                          sx={{ height: 120, mx: 'auto' }}
+                        />
+                        <Typography
+                          textAlign="center"
+                          variant="subtitle1"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          No Data
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                )}
                 {dataFiltered
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (

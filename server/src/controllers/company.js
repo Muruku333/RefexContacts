@@ -103,18 +103,19 @@ const CompanyController = {
       const results = await CompanyModel.listCompanies(cond);
 
       if (results.length > 0) {
+        let companyData = [];
 
-        let companyData=[];
-      
-        results.map((row)=>{
-          companyData=[
+        results.map((row) => {
+          companyData = [
             ...companyData,
             {
               ...row,
-              company_logo:row.company_logo?Buffer.from(row.company_logo, 'binary').toString():null,
-            }
-          ]
-        })
+              company_logo: row.company_logo
+                ? Buffer.from(row.company_logo, "binary").toString()
+                : null,
+            },
+          ];
+        });
 
         return Response.responseStatus(
           res,
@@ -135,8 +136,8 @@ const CompanyController = {
   getAllCompanies: async (req, res) => {
     try {
       const rows = await CompanyModel.getAllCompanies();
-      if(rows.length>0){
-        let companies =[];
+      if (rows.length > 0) {
+        let companies = [];
 
         // rows.map((row)=>{
 
@@ -151,19 +152,27 @@ const CompanyController = {
         //   ];
         // });
 
-        for(let i=0;i<rows.length;i++){
-          const branches = await CompanyBranchesModel.getCompanyBranchesByCondition({company_id: rows[i].company_id});
+        for (let i = 0; i < rows.length; i++) {
+          const branches =
+            await CompanyBranchesModel.getCompanyBranchesByCondition({
+              company_id: rows[i].company_id,
+            });
 
           companies = [
             ...companies,
             {
               ...rows[i],
               branches,
-            }
-          ]
+            },
+          ];
         }
 
-        return Response.responseStatus(res, 200, "List of companies with branches",companies);
+        return Response.responseStatus(
+          res,
+          200,
+          "List of companies with branches",
+          companies
+        );
       }
       return Response.responseStatus(res, 400, "No data found");
     } catch (error) {
@@ -204,11 +213,13 @@ const CompanyController = {
           await CompanyBranchesModel.getCompanyBranchesByCondition({
             company_id,
           });
-          
+
         const companyData = [
           {
             ...result[0],
-            company_logo:result[0].company_logo?Buffer.from(result[0].company_logo, 'binary').toString():null,
+            company_logo: result[0].company_logo
+              ? Buffer.from(result[0].company_logo, "binary").toString()
+              : null,
             company_branches: branches,
           },
         ];
@@ -403,25 +414,37 @@ const CompanyController = {
 
   deleteCompanyByCompanyId: async (req, res) => {
     try {
-      const company_id = req.params.company_id;
-      const result =
-        await CompanyBranchesModel.deleteCompanyBranchesByCondition({
-          company_id,
-        });
-      if (result.affectedRows > 0) {
-        const result_2 = await CompanyModel.deleteCompanyByCondition({
-          company_id,
-        });
+      // const company_id = req.params.company_id;
+      const { company_ids = [] } = req.body;
 
-        if (result_2.affectedRows > 0) {
-          return Response.responseStatus(
-            res,
-            200,
-            `Company deleted successfully`
-          );
+      for (let i = 0; i < company_ids.length; i++) {
+        const company_id = company_ids[i];
+
+        // const resExits = CompanyModel.getCompaniesCountByCondition({
+        //   company_id,
+        // });
+        // if (!resExits.length > 0)
+        //   return Response.responseStatus(res, 404, `Failed to delete Company`);
+
+        const result =
+          await CompanyBranchesModel.deleteCompanyBranchesByCondition({
+            company_id,
+          });
+
+        if (result.affectedRows > 0) {
+          const result_2 = await CompanyModel.deleteCompanyByCondition({
+            company_id,
+          });
+
+          if (!result_2.affectedRows > 0)
+            return Response.responseStatus(
+              res,
+              404,
+              `Failed to delete Company`
+            );
         }
       }
-      return Response.responseStatus(res, 404, `Failed to delete Company`);
+      return Response.responseStatus(res, 200, `Company deleted successfully`);
     } catch (error) {
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,

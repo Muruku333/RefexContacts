@@ -30,9 +30,15 @@ const EmployeeController = {
         createdBy,
       } = req.body;
 
-      const exists=await EmployeeModel.getEmployeeByCondition({employee_id:employeeId});
-      if(exists.length)
-        return Response.responseStatus(res, 403,  `An employee with the ID-${employeeId} already exists.`);
+      const exists = await EmployeeModel.getEmployeeByCondition({
+        employee_id: employeeId,
+      });
+      if (exists.length)
+        return Response.responseStatus(
+          res,
+          403,
+          `An employee with the ID-${employeeId} already exists.`
+        );
 
       const employee_data = {
         employee_id: employeeId,
@@ -104,7 +110,6 @@ const EmployeeController = {
           // console.log(companyResult);
           // console.log(branchResult);
 
-
           if (
             !empIdResult.length > 0 &&
             companyResult.length > 0 &&
@@ -156,14 +161,13 @@ const EmployeeController = {
     }
   },
 
-  exportEmployee: async(req,res)=>{
+  exportEmployee: async (req, res) => {
     try {
-
       const employeeData = await EmployeeModel.getAllEmployeeWithMapedData();
 
-      let employees=[];
+      let employees = [];
 
-      for(let i=0;i<employeeData.length;i++){
+      for (let i = 0; i < employeeData.length; i++) {
         const {
           employee_id,
           employee_name,
@@ -174,35 +178,38 @@ const EmployeeController = {
           is_active,
           company_name,
           branch_name,
-        }=employeeData[i];
+        } = employeeData[i];
 
-        employees =[
+        employees = [
           ...employees,
           {
-            'Employee Id':employee_id,
-            'Employee Name':employee_name,
-            Designation:designation,
-            'Mobile Number':mobile_number,
-            Landline:landline,
-            Email:email,
-            Active:is_active?"Yes":"No",
-            'Company Name':company_name,
-            'Branch Name':branch_name
-          }
-        ]
+            "Employee Id": employee_id,
+            "Employee Name": employee_name,
+            Designation: designation,
+            "Mobile Number": mobile_number,
+            Landline: landline,
+            Email: email,
+            Active: is_active ? "Yes" : "No",
+            "Company Name": company_name,
+            "Branch Name": branch_name,
+          },
+        ];
       }
 
-      const filename = 'EmployeeData.xlsx';
+      const filename = "EmployeeData.xlsx";
       const wb = xlsx.utils.book_new();
       const ws = xlsx.utils.json_to_sheet(employees);
-      xlsx.utils.book_append_sheet(wb, ws, 'Employees');
-      const wbBuffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
-  
-      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      xlsx.utils.book_append_sheet(wb, ws, "Employees");
+      const wbBuffer = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
+
+      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
       res.send(wbBuffer);
     } catch (error) {
-      console.error('Error exporting employee data:', error);
+      console.error("Error exporting employee data:", error);
       return Response.responseStatus(res, 500, "Internal server error");
     }
   },
@@ -273,39 +280,40 @@ const EmployeeController = {
             google_map_link,
           } = row;
 
-          employeeData = [
-            ...employeeData,
-            {
-              id: ep_id,
-              employee_id,
-              employee_name,
-              designation,
-              mobile_number,
-              landline,
-              email,
-              photo: photo ? Buffer.from(photo, "binary").toString() : null,
-              is_active,
-              company: {
-                company_id: company_id,
-                company_name,
-                company_website,
-                company_logo: company_logo
-                  ? Buffer.from(company_logo, "binary").toString()
-                  : null,
+          if (is_active)
+            employeeData = [
+              ...employeeData,
+              {
+                id: ep_id,
+                employee_id,
+                employee_name,
+                designation,
+                mobile_number,
+                landline,
+                email,
+                photo: photo ? Buffer.from(photo, "binary").toString() : null,
+                is_active,
+                company: {
+                  company_id: company_id,
+                  company_name,
+                  company_website,
+                  company_logo: company_logo
+                    ? Buffer.from(company_logo, "binary").toString()
+                    : null,
+                },
+                branch: {
+                  branch_id: branch_id,
+                  branch_name,
+                  branch_address,
+                  google_map_link,
+                },
               },
-              branch: {
-                branch_id: branch_id,
-                branch_name,
-                branch_address,
-                google_map_link,
-              },
-            },
-          ];
+            ];
         });
         return Response.responseStatus(
           res,
           200,
-          "List of all Employees ",
+          "List of all active employees ",
           employeeData,
           pageInfo
         );
@@ -627,23 +635,28 @@ const EmployeeController = {
 
   deleteEmployeeByEmployeeId: async (req, res) => {
     try {
-      const employee_id = req.params.employee_id;
-      const result = await EmployeeModel.deleteEmployeeByCondition({
-        employee_id,
-      });
-      if (result.affectedRows > 0) {
-        return Response.responseStatus(
-          res,
-          200,
-          `Employee Data deleted successfully`
-        );
+      // const employee_id = req.params.employee_id;
+      const { employee_ids = [] } = req.body;
+
+      for (let i = 0; i < employee_ids.length; i++) {
+        const employee_id = employee_ids[i];
+        const result = await EmployeeModel.deleteEmployeeByCondition({
+          employee_id,
+        });
+        if (!result.affectedRows > 0)
+          return Response.responseStatus(
+            res,
+            404,
+            `Failed to delete Employees`
+          );
       }
       return Response.responseStatus(
         res,
-        404,
-        `Failed to delete Employee Data`
+        200,
+        `Employees deleted successfully`
       );
     } catch (error) {
+      console.log(error);
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
       });

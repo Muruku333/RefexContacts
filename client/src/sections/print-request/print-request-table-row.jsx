@@ -4,13 +4,9 @@ import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
 import { useState, forwardRef, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import Slide from '@mui/material/Slide';
 import Table from '@mui/material/Table';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import Popover from '@mui/material/Popover';
 import Toolbar from '@mui/material/Toolbar';
 import Checkbox from '@mui/material/Checkbox';
@@ -22,7 +18,19 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import ListItemText from '@mui/material/ListItemText';
+import {
+  Box,
+  Slide,
+  Stack,
+  Badge,
+  Dialog,
+  Button,
+  DialogTitle,
+  ListItemText,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+} from '@mui/material';
 
 import { useAuth } from 'src/context/AuthContext';
 
@@ -37,21 +45,25 @@ export default function PrintRequestTableRow({
   requestId,
   printEmployees,
   createdBy,
-  modifiedBy,
+  createdAt,
   status,
   setRefresh,
   selected,
   handleClick,
 }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const {user} = useAuth();
+  const { user } = useAuth();
 
-  const [employeeId,setEmployeeId]=useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
+  const [peId, setPEID] = useState(null);
+  const [statusPE, setStatusPE] = useState(null);
   const [openPRMenu, setOpenPRMenu] = useState(null);
-  const [openEPMenu, setOpenEPMenu]=useState(null);
+  const [openEPMenu, setOpenEPMenu] = useState(null);
+  const [openAlert, setOpenAlert] = useState(false);
   const [openList, setOpenList] = useState(false);
   const [openViewPDF, setOpenViewPDF] = useState(false);
   const [PDF_URL, setPDF_URL] = useState(null);
+  const [selectedPE, setSelectedPE] = useState([]);
 
   const action = useCallback(
     (snackbarId) => (
@@ -78,29 +90,60 @@ export default function PrintRequestTableRow({
     setOpenPRMenu(null);
   };
 
-  const handleOpenEPMenu = (event,id) => {
+  const handleOpenEPMenu = (event, id, pe_id, stat) => {
     setEmployeeId(id);
     setOpenEPMenu(event.currentTarget);
+    setPEID(pe_id);
+    setStatusPE(stat);
   };
 
   const handleCloseEPMenu = () => {
     setOpenEPMenu(null);
   };
 
-  const handleClickStatusChange = (newStatus)=>{
+  const handleClickOpenAlert = () => {
+    setOpenAlert(true);
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
+  };
+
+  const handleClickStatusChange = (newStatus) => {
     try {
-      axios.patch(`/api/print_request/${requestId}?status=${newStatus}`).then((response)=>{
-        if(response.data.status){
-          enqueueSnackbar(response.data.message, { variant: 'success', action });
-          setRefresh((prev)=>prev+1);
-        }
-      }).catch((error)=>{
-        enqueueSnackbar(error.response.data.message, { variant: 'error', action })
-      })
+      axios
+        .patch(`/api/print_request/${requestId}?status=${newStatus}`)
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'success', action });
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error', action });
     }
-  }
+  };
+
+  const handleClickStatusChangePE = (peIDS = [], newStatus) => {
+    try {
+      axios
+        .patch(`/api/print_employees`, { request_id: requestId, pe_ids: peIDS, status: newStatus })
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'success', action });
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
+    } catch (error) {
+      enqueueSnackbar(error.message, { variant: 'error', action });
+    }
+  };
 
   const handleClickViewPDF = async () => {
     try {
@@ -110,9 +153,9 @@ export default function PrintRequestTableRow({
       // Create a blob URL and open it in a new tab
       // const url = window.URL.createObjectURL(response.data);
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      if(status==='approved'||user.user_type!=='HR'){
+      if (statusPE === 'approved' || user.user_type !== 'HR') {
         setPDF_URL(URL.createObjectURL(pdfBlob));
-      }else{
+      } else {
         setPDF_URL(`${URL.createObjectURL(pdfBlob)}#toolbar=0`);
       }
       handleViewPDFOpen();
@@ -120,23 +163,79 @@ export default function PrintRequestTableRow({
       console.error('Error fetching PDF:', error);
     }
   };
+
   const handleClickDownloadPDF = async () => {
     try {
       const response = await axios.get(`/api/generate_vcard_pdf/${employeeId}`, {
         responseType: 'blob', // Important!
       });
-      saveAs(response.data,`${employeeId}.pdf`);
+      saveAs(response.data, `${employeeId}.pdf`);
     } catch (error) {
       console.error('Error fetching PDF:', error);
     }
   };
 
+  const handleClickDeleteRequest = async (pr_ids = []) => {
+    try {
+      axios
+        .post(`/api/delete_print_request`, { request_ids: pr_ids })
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'warning', action });
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
+    } catch (error) {
+      enqueueSnackbar(error.message, { variant: 'error', action });
+    }
+  };
+
+  const handleSelectPEAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = printEmployees.map((_pe) => _pe.id);
+      setSelectedPE(newSelecteds);
+      return;
+    }
+    setSelectedPE([]);
+  };
+
+  const handleClickPE = (event, name) => {
+    const selectedIndex = selectedPE.indexOf(name);
+    let newSelected = [];
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selectedPE, name);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selectedPE.slice(1));
+    } else if (selectedIndex === selectedPE.length - 1) {
+      newSelected = newSelected.concat(selectedPE.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selectedPE.slice(0, selectedIndex),
+        selectedPE.slice(selectedIndex + 1)
+      );
+    }
+
+    setSelectedPE(newSelected);
+  };
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox disableRipple checked={selected} onChange={handleClick} />
-        </TableCell>
+        {user.user_type !== 'HR' && (
+          <TableCell padding="checkbox">
+            <Checkbox
+              disableRipple
+              checked={selected}
+              onChange={(e) => {
+                handleClick(e);
+                // handleSelectPEAllClick(e);
+              }}
+            />
+          </TableCell>
+        )}
 
         <TableCell>
           <IconButton aria-label="expand row" onClick={() => setOpenList(!openList)}>
@@ -167,43 +266,144 @@ export default function PrintRequestTableRow({
 
         <TableCell>{createdBy}</TableCell>
 
-        <TableCell>{modifiedBy}</TableCell>
+        <TableCell>{createdAt}</TableCell>
 
         {/* <TableCell align="center">{isVerified ? 'Yes' : 'No'}</TableCell> */}
 
         <TableCell>
-          <Label color={(status === 'pending' && 'warning') || (status === 'rejected' && 'error') || 'success'}>{status}</Label>
+          <Label
+            color={
+              (status === 'pending' && 'warning') || (status === 'rejected' && 'error') || 'success'
+            }
+          >
+            {status}
+          </Label>
         </TableCell>
 
-        {user.user_type!=="HR" ?         <TableCell align="right">
-          <IconButton onClick={handleOpenPRMenu}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>:<TableCell/> }
-
+        {user.user_type !== 'HR' ? (
+          <TableCell align="right">
+            <IconButton onClick={handleOpenPRMenu}>
+              <Iconify icon="eva:more-vertical-fill" />
+            </IconButton>
+          </TableCell>
+        ) : (
+          <TableCell />
+        )}
       </TableRow>
 
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
           <Collapse in={openList} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
-              <Typography variant="h6" gutterBottom component="div">
-                Selected Employees - <Label color={(status === 'pending' && 'warning') || (status === 'rejected' && 'error') || 'success'}>{requestId}</Label>
-              </Typography>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ height: 50 }}
+              >
+                <Typography variant="h6" gutterBottom component="div">
+                  Selected Employees -{' '}
+                  <Label
+                    color={
+                      (status === 'pending' && 'warning') ||
+                      (status === 'rejected' && 'error') ||
+                      'success'
+                    }
+                  >
+                    {requestId}
+                  </Label>
+                </Typography>
+
+                {selectedPE.length > 0 && (
+                  <Stack direction="row" gap={2}>
+                    <Button
+                      onClick={() => {
+                        handleClickStatusChangePE(selectedPE, 'approved');
+                        setSelectedPE([]);
+                      }}
+                      color="success"
+                      endIcon={
+                        <Badge badgeContent={selectedPE.length} color="success">
+                          <Iconify icon="eva:checkmark-fill" />
+                        </Badge>
+                      }
+                    >
+                      Approved
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        handleClickStatusChangePE(selectedPE, 'pending');
+                        setSelectedPE([]);
+                      }}
+                      color="warning"
+                      endIcon={
+                        <Badge badgeContent={selectedPE.length} color="warning">
+                          <Iconify icon="eva:clock-outline" />
+                        </Badge>
+                      }
+                    >
+                      Pending
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        handleClickStatusChangePE(selectedPE, 'rejected');
+                        setSelectedPE([]);
+                      }}
+                      color="error"
+                      endIcon={
+                        <Badge badgeContent={selectedPE.length} color="error">
+                          <Iconify icon="eva:close-fill" />
+                        </Badge>
+                      }
+                    >
+                      Rejected
+                    </Button>
+                  </Stack>
+                )}
+              </Box>
+
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
+                    {user.user_type !== 'HR' && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          indeterminate={
+                            selectedPE.length > 0 && selectedPE.length < printEmployees.length
+                          }
+                          checked={
+                            printEmployees.length > 0 && selectedPE.length === printEmployees.length
+                          }
+                          onChange={(e) => {
+                            // handleClick(e);
+                            handleSelectPEAllClick(e);
+                          }}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>Employee ID</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Designation</TableCell>
                     <TableCell>Company</TableCell>
                     <TableCell>Branch</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell />
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {printEmployees.map((_pe) => (
                     <TableRow key={_pe.id}>
+                      {user.user_type !== 'HR' && (
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            disableRipple
+                            checked={selectedPE.indexOf(_pe.id) !== -1}
+                            onChange={(event) => {
+                              handleClickPE(event, _pe.id);
+                            }}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell component="th" scope="row">
                         <Typography variant="subtitle2" noWrap>
                           {_pe.employee_id}
@@ -229,16 +429,40 @@ export default function PrintRequestTableRow({
                       <TableCell>{_pe.designation}</TableCell>
                       <TableCell>{_pe.company.company_name}</TableCell>
                       <TableCell>{_pe.branch.branch_name}</TableCell>
-                      {user.user_type ==='HR'&& (status==='approved'||status==='pending') ?(<TableCell>
-                        <IconButton onClick={(e)=>{handleOpenEPMenu(e,_pe.employee_id)}}>
-                          <Iconify icon="eva:more-vertical-fill" />
-                        </IconButton>
-                      </TableCell>):(<TableCell/>)}
-                      {user.user_type!=='HR'? (<TableCell>
-                        <IconButton onClick={(e)=>{handleOpenEPMenu(e,_pe.employee_id)}}>
-                          <Iconify icon="eva:more-vertical-fill" />
-                        </IconButton>
-                      </TableCell>):(<TableCell/>)}
+                      <TableCell>
+                        <Label
+                          color={
+                            (_pe.status === 'pending' && 'warning') ||
+                            (_pe.status === 'rejected' && 'error') ||
+                            'success'
+                          }
+                        >
+                          {_pe.status}
+                        </Label>
+                      </TableCell>
+                      {user.user_type === 'HR' &&
+                      (_pe.status === 'approved' || _pe.status === 'pending') ? (
+                        <TableCell>
+                          <IconButton
+                            onClick={(e) => {
+                              handleOpenEPMenu(e, _pe.employee_id, _pe.id, _pe.status);
+                            }}
+                          >
+                            <Iconify icon="eva:more-vertical-fill" />
+                          </IconButton>
+                        </TableCell>
+                      ) : null}
+                      {user.user_type !== 'HR' ? (
+                        <TableCell>
+                          <IconButton
+                            onClick={(e) => {
+                              handleOpenEPMenu(e, _pe.employee_id, _pe.id, _pe.status);
+                            }}
+                          >
+                            <Iconify icon="eva:more-vertical-fill" />
+                          </IconButton>
+                        </TableCell>
+                      ) : null}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -289,40 +513,52 @@ export default function PrintRequestTableRow({
           sx: { width: 160 },
         }}
       >
-                <MenuItem
-          onClick={() => {
-            handleClickStatusChange("pending");
-            handleClosePRMenu();
-          }}
-          sx={{ color: 'warning.main' }}
-        >
-          <Iconify icon="eva:clock-outline" sx={{ mr: 2 }} />
-          Pending
-        </MenuItem>
+        {status !== 'pending' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChange('pending');
+              handleClosePRMenu();
+            }}
+            sx={{ color: 'warning.main' }}
+          >
+            <Iconify icon="eva:clock-outline" sx={{ mr: 2 }} />
+            Pending
+          </MenuItem>
+        )}
+
+        {status !== 'approved' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChange('approved');
+              handleClosePRMenu();
+            }}
+            sx={{ color: 'success.main' }}
+          >
+            <Iconify icon="eva:checkmark-fill" sx={{ mr: 2 }} />
+            Approved
+          </MenuItem>
+        )}
+
+        {status !== 'rejected' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChange('rejected');
+              handleClosePRMenu();
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <Iconify icon="eva:close-fill" sx={{ mr: 2 }} />
+            Rejected
+          </MenuItem>
+        )}
 
         <MenuItem
           onClick={() => {
-            handleClickStatusChange("approved");
-            handleClosePRMenu();
-          }}
-          sx={{ color: 'success.main' }}
-        >
-          <Iconify icon="eva:checkmark-fill" sx={{ mr: 2 }} />
-          Approved
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            handleClickStatusChange("rejected");
+            handleClickOpenAlert();
             handleClosePRMenu();
           }}
           sx={{ color: 'error.main' }}
         >
-          <Iconify icon="eva:close-fill" sx={{ mr: 2 }} />
-          Rejected
-        </MenuItem>
-
-        <MenuItem onClick={handleClosePRMenu} sx={{ color: 'error.main' }}>
           <Iconify icon="solar:trash-bin-trash-bold-duotone" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
@@ -338,6 +574,45 @@ export default function PrintRequestTableRow({
           sx: { width: 160 },
         }}
       >
+        {user.user_type !== 'HR' && statusPE !== 'pending' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChangePE([peId], 'pending');
+              handleCloseEPMenu();
+            }}
+            sx={{ color: 'warning.main' }}
+          >
+            <Iconify icon="eva:clock-outline" sx={{ mr: 2 }} />
+            Pending
+          </MenuItem>
+        )}
+
+        {user.user_type !== 'HR' && statusPE !== 'approved' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChangePE([peId], 'approved');
+              handleCloseEPMenu();
+            }}
+            sx={{ color: 'success.main' }}
+          >
+            <Iconify icon="eva:checkmark-fill" sx={{ mr: 2 }} />
+            Approved
+          </MenuItem>
+        )}
+
+        {user.user_type !== 'HR' && statusPE !== 'rejected' && (
+          <MenuItem
+            onClick={() => {
+              handleClickStatusChangePE([peId], 'rejected');
+              handleCloseEPMenu();
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <Iconify icon="eva:close-fill" sx={{ mr: 2 }} />
+            Rejected
+          </MenuItem>
+        )}
+
         <MenuItem
           onClick={() => {
             handleClickViewPDF();
@@ -348,15 +623,17 @@ export default function PrintRequestTableRow({
           View PDF
         </MenuItem>
 
-          {user.user_type==='HR'&& status==='pending'?(null):( <MenuItem
-          onClick={() => {
-            handleClickDownloadPDF();
-            handleCloseEPMenu();
-          }}
-        >
-          <Iconify icon="solar:download-bold-duotone" sx={{ mr: 2 }} />
-          Download PDF
-        </MenuItem>)}
+        {user.user_type === 'HR' && statusPE !== 'approved' ? null : (
+          <MenuItem
+            onClick={() => {
+              handleClickDownloadPDF();
+              handleCloseEPMenu();
+            }}
+          >
+            <Iconify icon="solar:download-bold-duotone" sx={{ mr: 2 }} />
+            Download PDF
+          </MenuItem>
+        )}
         {/* {user.user_type!=='HR'&&(        <MenuItem
           onClick={() => {
             handleClickDownloadPDF();
@@ -372,6 +649,36 @@ export default function PrintRequestTableRow({
           Delete
         </MenuItem> */}
       </Popover>
+
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        open={openAlert}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleCloseAlert}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure want to delete?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              handleClickDeleteRequest([requestId]);
+              handleCloseAlert();
+            }}
+          >
+            Delete
+          </Button>
+          <Button variant="outlined" onClick={handleCloseAlert}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -380,7 +687,7 @@ PrintRequestTableRow.propTypes = {
   requestId: PropTypes.string,
   printEmployees: PropTypes.array,
   createdBy: PropTypes.string,
-  modifiedBy: PropTypes.string,
+  createdAt: PropTypes.string,
   status: PropTypes.string,
   setRefresh: PropTypes.any,
   selected: PropTypes.any,

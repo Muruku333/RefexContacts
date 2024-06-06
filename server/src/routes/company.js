@@ -5,12 +5,18 @@ const Type = require("../utils/userTypes");
 const router = express.Router();
 const validation = require("../middlewares/companyValidator");
 
-router.route("/company_list").get(authMiddleware.authCheck,CompanyController.listCompanies);
+router
+  .route("/company_list")
+  .get(authMiddleware.authCheck, CompanyController.listCompanies);
 
 router
-.route("/companies")
-.get(authMiddleware.authCheck,CompanyController.getAllCompanies)
-.post(authMiddleware.authCheck,validation.createCompanyData,CompanyController.createCompany);
+  .route("/companies")
+  .get(authMiddleware.authCheck, CompanyController.getAllCompanies)
+  .post(
+    authMiddleware.authCheck,
+    validation.createCompanyData,
+    CompanyController.createCompany
+  );
 
 // router
 // .route("/company/:id")
@@ -19,9 +25,21 @@ router
 // .delete(CompanyController.deleteCompanyById);
 
 router
-.route("/companies/:company_id")
-.get(authMiddleware.authCheck,CompanyController.getCompanyByCompanyId)
-.put(authMiddleware.authCheck,validation.updateCompanyData,CompanyController.updateCompanyByCompanyId)
-.delete(authMiddleware.authCheck,CompanyController.deleteCompanyByCompanyId);
+  .route("/companies/:company_id")
+  .get(authMiddleware.authCheck, CompanyController.getCompanyByCompanyId)
+  .put(
+    authMiddleware.authCheck,
+    validation.updateCompanyData,
+    CompanyController.updateCompanyByCompanyId
+  );
+// .delete(
+//   authMiddleware.authCheck,
+//   // authMiddleware.authAllowTypes([Type.Admin, Type.SuperAdmin]),
+//   CompanyController.deleteCompanyByCompanyId
+// );
+
+router
+  .route("/delete_companies")
+  .post(authMiddleware.authCheck, CompanyController.deleteCompanyByCompanyId);
 
 module.exports = router;

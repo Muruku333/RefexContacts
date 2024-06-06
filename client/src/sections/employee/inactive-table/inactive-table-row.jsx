@@ -1,7 +1,7 @@
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack';
-import { useState, useCallback } from 'react';
+import { useState, forwardRef, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
@@ -12,6 +12,15 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import {
+  Slide,
+  Dialog,
+  Button,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+} from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -19,6 +28,8 @@ import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
+
+const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 export default function InactiveTableRow({
   employeeId,
@@ -39,15 +50,24 @@ export default function InactiveTableRow({
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const [open, setOpen] = useState(null);
-  const [statusChange, setStatusChange] =useState({id:null,is_active:null});
+  const [openAlert, setOpenAlert] = useState(false);
+  const [statusChange, setStatusChange] = useState({ id: null, is_active: null });
 
   const handleOpenMenu = (event, id, is_active) => {
-    setStatusChange({id,is_active});
+    setStatusChange({ id, is_active });
     setOpen(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
+  };
+
+  const handleClickOpenAlert = () => {
+    setOpenAlert(true);
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
   };
 
   const action = useCallback(
@@ -59,39 +79,45 @@ export default function InactiveTableRow({
     [closeSnackbar]
   );
 
-  const handleClickEdit = ()=>{
+  const handleClickEdit = () => {
     router.push(`/employees/edit/${statusChange.id}`);
-  }
+  };
 
-  const handleClickActiveChange = () =>{
+  const handleClickActiveChange = () => {
     try {
-      axios.patch(`/api/employees/${statusChange.id}?active=${statusChange.is_active?'0':'1'}`).then((response)=>{
-        if(response.data.status){
-          enqueueSnackbar(response.data.message, { variant: 'success', action });
-          setRefresh((prev)=>prev+1);
-        }
-      }).catch((error)=>{
-        enqueueSnackbar(error.response.data.message, { variant: 'error', action })
-      })
+      axios
+        .patch(`/api/employees/${statusChange.id}?active=${statusChange.is_active ? '0' : '1'}`)
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'success', action });
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error', action });
     }
-  }
+  };
 
-  const handleClickDelete = ()=>{
+  const handleClickDelete = () => {
     try {
-      axios.delete(`/api/employees/${statusChange.id}`).then((response)=>{
-        if(response.data.status){
-          enqueueSnackbar(response.data.message, { variant: 'warning', action });
-          setRefresh((prev)=>prev+1);
-        }
-      }).catch((error)=>{
-        enqueueSnackbar(error.response.data.message, { variant: 'error', action })
-      })
+      axios
+        .post('/api/delete_employees', { employee_ids: [statusChange.id] })
+        .then((response) => {
+          if (response.data.status) {
+            enqueueSnackbar(response.data.message, { variant: 'warning', action });
+            setRefresh((prev) => prev + 1);
+          }
+        })
+        .catch((error) => {
+          enqueueSnackbar(error.response.data.message, { variant: 'error', action });
+        });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error', action });
     }
-  }
+  };
 
   return (
     <>
@@ -126,7 +152,11 @@ export default function InactiveTableRow({
         </TableCell>
 
         <TableCell align="right">
-        <IconButton onClick={(event)=>{handleOpenMenu(event,employeeId,status)}}>
+          <IconButton
+            onClick={(event) => {
+              handleOpenMenu(event, employeeId, status);
+            }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -142,32 +172,80 @@ export default function InactiveTableRow({
           sx: { width: 140 },
         }}
       >
-        <MenuItem onClick={()=>{handleClickEdit();handleCloseMenu()}}>
+        <MenuItem
+          onClick={() => {
+            handleClickEdit();
+            handleCloseMenu();
+          }}
+        >
           <Iconify icon="solar:pen-bold-duotone" sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem onClick={()=>{handleClickActiveChange();handleCloseMenu()}} sx={{ color:'success.main' }}>
+        <MenuItem
+          onClick={() => {
+            handleClickActiveChange();
+            handleCloseMenu();
+          }}
+          sx={{ color: 'success.main' }}
+        >
           <Iconify icon="solar:power-bold-duotone" sx={{ mr: 2 }} />
           Activate
         </MenuItem>
 
-        <MenuItem onClick={()=>{handleClickDelete();handleCloseMenu()}} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={() => {
+            // handleClickDelete();
+            handleClickOpenAlert();
+            handleCloseMenu();
+          }}
+          sx={{ color: 'error.main' }}
+        >
           <Iconify icon="solar:trash-bin-trash-bold-duotone" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
       </Popover>
+
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        open={openAlert}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleCloseAlert}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure want to delete?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              handleClickDelete();
+              handleCloseAlert();
+            }}
+          >
+            Delete
+          </Button>
+          <Button variant="outlined" onClick={handleCloseAlert}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
 
 InactiveTableRow.propTypes = {
   employeeId: PropTypes.any,
-  email:PropTypes.any,
-  designation:PropTypes.any,
-  branch:PropTypes.any,
-  landline:PropTypes.any,
-  mobileNumber:PropTypes.any,
+  email: PropTypes.any,
+  designation: PropTypes.any,
+  branch: PropTypes.any,
+  landline: PropTypes.any,
+  mobileNumber: PropTypes.any,
   photo: PropTypes.any,
   company: PropTypes.any,
   handleClick: PropTypes.func,

@@ -45,7 +45,7 @@ export default function CompanyList() {
 
   const [filterName, setFilterName] = useState('');
 
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  // const [rowsPerPage, setRowsPerPage] = useState(5);ks
 
   const [refresh, setRefresh] = useState(0);
 
@@ -119,10 +119,10 @@ export default function CompanyList() {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
-  };
+  // const handleChangeRowsPerPage = (event) => {
+  //   setPage(0);
+  //   setRowsPerPage(parseInt(event.target.value, 10));
+  // };
 
   const handleFilterByName = (event) => {
     setPage(0);
@@ -156,9 +156,12 @@ export default function CompanyList() {
 
       <Card>
         <CompanyTableToolbar
+          selectedCompanies={selected}
           numSelected={selected.length}
           filterName={filterName}
           onFilterName={handleFilterByName}
+          setSelected={setSelected}
+          setRefresh={setRefresh}
         />
 
         <Scrollbar>
@@ -172,9 +175,9 @@ export default function CompanyList() {
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
-                  { id: 'company_logo', label: 'Company Logo',align: 'center' },
-                  { id: 'company_name', label: 'Company Name',align: 'center' },
-                  { id: 'company_website', label: 'Company Website',align: 'center' },
+                  { id: 'company_logo', label: 'Company Logo', align: 'center' },
+                  { id: 'company_name', label: 'Company Name', align: 'center' },
+                  { id: 'company_website', label: 'Company Website', align: 'center' },
                   { id: '' },
                 ]}
               />

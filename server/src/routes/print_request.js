@@ -15,16 +15,30 @@ router
     PrintRequestController.createPrintRequest
   );
 
+router.route("/delete_print_request").post(
+  auth.authCheck,
+  // auth.authAllowTypes([Role.Admin, Role.SuperAdmin]),
+  PrintRequestController.deletePrintRequest
+);
+
 router
   .route("/print_request/:request_id")
   .patch(
     auth.authCheck,
-    auth.authAllowTypes([Role.Admin,Role.SuperAdmin]),
+    auth.authAllowTypes([Role.Admin, Role.SuperAdmin]),
     PrintRequestController.updateStatusPrintRequests
   );
 
 router
+  .route("/print_employees")
+  .patch(
+    auth.authCheck,
+    auth.authAllowTypes([Role.Admin, Role.SuperAdmin]),
+    PrintRequestController.updateStatusPrintEmployees
+  );
+
+router
   .route("/generate_vcard_pdf/:employee_id")
-  .get(auth.authCheck, PrintRequestController.generateVCardPDF);
+  .get(PrintRequestController.generateVCardPDF);
 
 module.exports = router;

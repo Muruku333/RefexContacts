@@ -7,6 +7,8 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
+import { useAuth } from 'src/context/AuthContext';
+
 import { visuallyHidden } from './utils';
 
 // ----------------------------------------------------------------------
@@ -20,6 +22,8 @@ export default function PrintRequestTableHead({
   onRequestSort,
   onSelectAllClick,
 }) {
+  const { user } = useAuth();
+
   const onSort = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -27,13 +31,15 @@ export default function PrintRequestTableHead({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
-        </TableCell>
+        {user.user_type !== 'HR' && (
+          <TableCell padding="checkbox">
+            <Checkbox
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+            />
+          </TableCell>
+        )}
 
         {headLabel.map((headCell) => {
           if (headCell.id === 'total_employees') {

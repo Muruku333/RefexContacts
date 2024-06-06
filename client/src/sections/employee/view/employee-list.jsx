@@ -7,12 +7,12 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import { IconButton } from '@mui/material';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
+import { Box, TableRow, TableCell, IconButton } from '@mui/material';
 
 import { RouterLink } from 'src/routes/components';
 // import { useRouter } from 'src/routes/hooks';
@@ -26,7 +26,7 @@ import EmployeeTableHead from '../employee-table/employee-table-head';
 import EmployeeTableToolbar from '../employee-table/employee-table-toolbar';
 
 // ----------------------------------------------------------------------
-const HEADER_LABEL =[
+const HEADER_LABEL = [
   { id: 'ep.employee_id', label: 'Employee ID' },
   { id: 'ep.employee_name', label: 'Name' },
   { id: 'ep.mobile_number', label: 'Mobile Number' },
@@ -37,6 +37,14 @@ const HEADER_LABEL =[
   // { id: 'landline', label: 'Landline', align: 'center' },
   { id: 'ep.is_active', label: 'Status' },
   { id: '' },
+];
+
+const filterBy = [
+  { id: 'ep.employee_id', label: 'Employee ID' },
+  { id: 'ep.employee_name', label: 'Name' },
+  { id: 'ep.mobile_number', label: 'Mobile Number' },
+  { id: 'cp.company_name', label: 'Company' },
+  { id: 'cpb.branch_name', label: 'Branch' },
 ];
 
 export default function EmployeeList() {
@@ -52,15 +60,15 @@ export default function EmployeeList() {
 
   const [selected, setSelected] = useState([]);
 
-  const [filterField, setFilterField] =useState('ep.employee_id');
+  const [filterField, setFilterField] = useState('ep.employee_id');
 
   const [orderBy, setOrderBy] = useState('ep.id');
 
   const [filterName, setFilterName] = useState('');
 
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  // const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [refresh, setRefresh]=useState(0);
+  const [refresh, setRefresh] = useState(0);
 
   // console.log(selected);
 
@@ -77,7 +85,9 @@ export default function EmployeeList() {
     const fetchData = async () => {
       try {
         await axios
-          .get(`/api/employees?field=${filterField}&search=${filterName}&sort=${orderBy}&order=${order}&page=${page}`)
+          .get(
+            `/api/employees?field=${filterField}&search=${filterName}&sort=${orderBy}&order=${order}&page=${page}`
+          )
           .then((response) => {
             if (response.data.status) {
               setEmployees(response.data.results);
@@ -98,7 +108,7 @@ export default function EmployeeList() {
     };
 
     fetchData();
-  }, [filterField,filterName, orderBy, order, page, refresh, action, enqueueSnackbar]);
+  }, [filterField, filterName, orderBy, order, page, refresh, action, enqueueSnackbar]);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -114,6 +124,10 @@ export default function EmployeeList() {
       setSelected(newSelecteds);
       return;
     }
+    setSelected([]);
+  };
+
+  const handleUnSelectAllClick = () => {
     setSelected([]);
   };
 
@@ -139,13 +153,17 @@ export default function EmployeeList() {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
+  // const handleChangeRowsPerPage = (event) => {
+  //   setPage(0);
+  //   setRowsPerPage(parseInt(event.target.value, 10));
+  // };
+
+  const handleFilterField = (value = 'ep.employee_id') => {
+    setFilterField(value);
   };
 
-  const handleFilterByName = (event) => {
-    setFilterField('ep.employee_name');
+  const handleFilterValue = (event) => {
+    // setFilterField('ep.employee_id');
     setPage(1);
     setFilterName(event.target.value);
   };
@@ -185,11 +203,16 @@ export default function EmployeeList() {
 
       <Card>
         <EmployeeTableToolbar
+          onUnselectAll={handleUnSelectAllClick}
           selectedEmployees={selected}
           setSelectedEmployees={setSelected}
           numSelected={selected.length}
+          filterBy={filterBy}
           filterName={filterName}
-          onFilterName={handleFilterByName}
+          filterField={filterField}
+          onFilterValue={handleFilterValue}
+          onFilterField={handleFilterField}
+          setRefresh={setRefresh}
         />
 
         <Scrollbar>
@@ -205,6 +228,27 @@ export default function EmployeeList() {
                 headLabel={HEADER_LABEL}
               />
               <TableBody>
+                {dataFiltered.length < 1 && !notFound && (
+                  <TableRow sx={{ height: 300 }}>
+                    <TableCell colSpan={10}>
+                      <Stack spacing={1}>
+                        <Box
+                          component="img"
+                          src="/assets/icons/ic_content.svg"
+                          sx={{ height: 120, mx: 'auto' }}
+                        />
+                        <Typography
+                          textAlign="center"
+                          variant="subtitle1"
+                          color="text.secondary"
+                          component="span"
+                        >
+                          No Data
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                )}
                 {dataFiltered
                   // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
@@ -237,16 +281,7 @@ export default function EmployeeList() {
           </TableContainer>
         </Scrollbar>
 
-        {/* <TablePagination
-          page={page}
-          component="div"
-          count={employees.length}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        /> */}
-        <Stack direction="row" alignItems="center" justifyContent="center" my={3} spacing={2}>
+        <Stack direction="row" alignItems="center" justifyContent="center" my={3} gap={15}>
           <Pagination
             showFirstButton
             showLastButton
@@ -256,6 +291,21 @@ export default function EmployeeList() {
             variant="outlined"
             shape="rounded"
           />
+          {/* <TablePagination
+            page={page}
+            component="div"
+            count={info.totalData}
+            rowsPerPage={rowsPerPage}
+            // onPageChange={handleChangePage}
+            rowsPerPageOptions={[5, 10, 25]}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              mx: 5,
+              '& .MuiTablePagination-actions': {
+                display: 'none',
+              },
+            }}
+          /> */}
         </Stack>
       </Card>
     </Container>

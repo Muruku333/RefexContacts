@@ -19,7 +19,7 @@ import {
   Container,
   TextField,
   IconButton,
-  Typography
+  Typography,
 } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
@@ -108,15 +108,15 @@ export default function CompanyCreate() {
     setCompanyBranches((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const clearAllBranches = () =>{
+  const clearAllBranches = () => {
     setCompanyBranches([
-        {
-            companyBranchName: '',
-            companyBranchAddress: '',
-            googleMapLink: '',
-        }
-    ])
-  }
+      {
+        companyBranchName: '',
+        companyBranchAddress: '',
+        googleMapLink: '',
+      },
+    ]);
+  };
 
   const handleInputChangeBranch = (index, field, value) => {
     const updatedCompanyBranches = [...companyBranches];
@@ -175,7 +175,7 @@ export default function CompanyCreate() {
     }
     try {
       await axios
-        .post(`/api/companies`, {...companyData,companyBranches})
+        .post(`/api/companies`, { ...companyData, companyBranches })
         .then((response) => {
           console.log(response);
           if (response.data.status) {
@@ -443,7 +443,7 @@ export default function CompanyCreate() {
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>
                     <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
-                      Create Employee
+                      Create Company
                     </Button>
                   </Grid>
                   <Grid xs={2} sm={3} md={3}>

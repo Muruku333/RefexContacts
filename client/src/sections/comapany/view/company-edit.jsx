@@ -20,7 +20,7 @@ import {
   Container,
   TextField,
   IconButton,
-  Typography
+  Typography,
 } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
@@ -70,14 +70,14 @@ export default function CompanyEdit() {
   const router = useRouter();
 
   const [companyData, setCompanyData] = useState({
-    companyName: "",
-    companyWebSite: "null",
+    companyName: '',
+    companyWebSite: 'null',
     companyLogo: null,
     modifiedBy: user.user_id,
   });
   const [companyBranches, setCompanyBranches] = useState([
     {
-      branchId:'',
+      branchId: '',
       companyBranchName: '',
       companyBranchAddress: '',
       googleMapLink: '',
@@ -108,28 +108,28 @@ export default function CompanyEdit() {
             companyLogo: company_logo,
           }));
           let branches = [];
-        //   company_branches.map((branch) => {
+          //   company_branches.map((branch) => {
 
-        //     branches = [
-        //       ...branches,
-        //       {
-        //         companyBranchName: branch.branch_name,
-        //         companyBranchAddress: branch.branch_address,
-        //         googleMapLink: branch.google_map_link,
-        //       },
-        //     ];
-        //   });
-        for(let i=0;i<company_branches.length;i += 1){
+          //     branches = [
+          //       ...branches,
+          //       {
+          //         companyBranchName: branch.branch_name,
+          //         companyBranchAddress: branch.branch_address,
+          //         googleMapLink: branch.google_map_link,
+          //       },
+          //     ];
+          //   });
+          for (let i = 0; i < company_branches.length; i += 1) {
             branches = [
-                ...branches,
-                {
-                    branchId:company_branches[i].branch_id,
-                    companyBranchName:company_branches[i].branch_name,
-                    companyBranchAddress:company_branches[i].branch_address,
-                    googleMapLink:company_branches[i].google_map_link
-                }
-            ]
-        }
+              ...branches,
+              {
+                branchId: company_branches[i].branch_id,
+                companyBranchName: company_branches[i].branch_name,
+                companyBranchAddress: company_branches[i].branch_address,
+                googleMapLink: company_branches[i].google_map_link,
+              },
+            ];
+          }
 
           setCompanyBranches(branches);
         } else {
@@ -139,7 +139,7 @@ export default function CompanyEdit() {
               companyBranchName: '',
               companyBranchAddress: '',
               googleMapLink: '',
-            }
+            },
           ]);
         }
       } catch (error) {
@@ -384,7 +384,7 @@ export default function CompanyEdit() {
                       fullWidth
                       required
                       label="Company Name"
-                        value={companyData.companyName}
+                      value={companyData.companyName}
                       onChange={(event) => {
                         handleInputChange('companyName', event.target.value);
                       }}
@@ -397,7 +397,7 @@ export default function CompanyEdit() {
                       required
                       label="Company Website"
                       placeholder="Ex: https://google.com"
-                        value={companyData.companyWebSite}
+                      value={companyData.companyWebSite}
                       onChange={(event) => {
                         handleInputChange('companyWebSite', event.target.value);
                       }}
@@ -500,31 +500,11 @@ export default function CompanyEdit() {
               <Grid xs={4} sm={10} md={10} />
               <Grid xs={4} sm={9} md={9}>
                 <Grid container spacing={5} mt={3} columns={{ xs: 4, sm: 9, md: 9 }}>
-                  <Grid xs={2} sm={3} md={3}>
-                    <Button fullWidth variant="contained" color="info" onClick={addBranch}>
-                      Add Branch
-                    </Button>
-                  </Grid>
-                  <Grid xs={2} sm={3} md={3}>
-                    <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
-                      Update Company
-                    </Button>
-                  </Grid>
+                  <Grid xs={2} sm={3} md={3} />
                   <Grid xs={2} sm={3} md={3}>
                     <>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          if (changeMade) {
-                            handleClickAlert();
-                          } else {
-                            router.back();
-                          }
-                        }}
-                      >
-                        Close
+                      <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
+                        Update&nbsp;&&nbsp;Close
                       </Button>
                       <Dialog
                         open={openAlert}
@@ -554,6 +534,27 @@ export default function CompanyEdit() {
                       </Dialog>
                     </>
                   </Grid>
+                  <Grid xs={2} sm={3} md={3}>
+                    <Button fullWidth variant="contained" color="info" onClick={addBranch}>
+                      Add Branch
+                    </Button>
+                  </Grid>
+                  {/* <Grid xs={2} sm={3} md={3}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          if (changeMade) {
+                            handleClickAlert();
+                          } else {
+                            router.back();
+                          }
+                        }}
+                      >
+                        Close
+                      </Button>
+                  </Grid> */}
                 </Grid>
               </Grid>
             </Grid>
