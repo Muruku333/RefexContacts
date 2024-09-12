@@ -314,7 +314,6 @@ export default function EmployeeEdit() {
             // component={RouterLink}
             startIcon={<Iconify icon="eva:arrow-back-fill" />}
           >
-            {' '}
             Back to list
           </Button>
         </Stack>
