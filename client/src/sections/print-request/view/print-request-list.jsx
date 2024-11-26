@@ -320,6 +320,7 @@ export default function PrintRequestList() {
                       createdBy={row.created.email}
                       createdAt={new Date(row.created.created_at).toLocaleString('en-IN')}
                       status={row.status}
+                      supportDocument={row.support_document}
                       setRefresh={setRefresh}
                       selected={selected.indexOf(row.request_id) !== -1}
                       handleClick={(event) => handleClick(event, row.request_id)}

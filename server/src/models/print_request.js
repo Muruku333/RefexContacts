@@ -8,7 +8,7 @@ const PrintRequestModel = {
   },
   listRequests: async (cond) => {
     const [rows, fields] = await db.query(`
-        SELECT pr.id, pr.request_id,pr.status,pr.created_by,cu.email AS cu_email,pr.created_at,pr.modified_by,mu.email AS mu_email,pr.modified_at FROM ${table} AS pr
+        SELECT pr.id, pr.request_id,pr.status,pr.support_document,pr.created_by,cu.email AS cu_email,pr.created_at,pr.modified_by,mu.email AS mu_email,pr.modified_at FROM ${table} AS pr
         INNER JOIN users AS cu ON pr.created_by = cu.user_id
         INNER JOIN users AS mu ON pr.modified_by = mu.user_id
         WHERE ${cond.field} LIKE "%${cond.search}%"
@@ -17,14 +17,14 @@ const PrintRequestModel = {
     `);
     return rows;
   },
-  getRequestsCountByCondition: async(cond)=>{
+  getRequestsCountByCondition: async (cond) => {
     const [rows, fields] = await db.query(
-        `SELECT COUNT(pr.id) AS totalData FROM ${table} AS pr
+      `SELECT COUNT(pr.id) AS totalData FROM ${table} AS pr
         INNER JOIN users AS cu ON pr.created_by = cu.user_id
         INNER JOIN users AS mu ON pr.modified_by = mu.user_id
         WHERE ${cond.field} LIKE "%${cond.search}%" ORDER BY ${cond.sort} ${cond.order}`
-      );
-      return rows;
+    );
+    return rows;
   },
   getAllRequests: async () => {
     const [rows, fields] = await db.query(`SELECT * FROM ${table}`);
@@ -45,7 +45,7 @@ const PrintRequestModel = {
     );
     return rows;
   },
-  updateRequestById:async (id, update) => {
+  updateRequestById: async (id, update) => {
     const [rows] = await db.query(`UPDATE ${table} SET ? WHERE id = ?`, [
       update,
       id,
@@ -72,7 +72,7 @@ const PrintRequestModel = {
         .join(" AND ")}`
     );
     return rows;
-  }
+  },
 };
 
 module.exports = PrintRequestModel;

@@ -47,6 +47,7 @@ export default function PrintRequestTableRow({
   createdBy,
   createdAt,
   status,
+  supportDocument,
   setRefresh,
   selected,
   handleClick,
@@ -62,6 +63,7 @@ export default function PrintRequestTableRow({
   const [openAlert, setOpenAlert] = useState(false);
   const [openList, setOpenList] = useState(false);
   const [openViewPDF, setOpenViewPDF] = useState(false);
+  const [openViewDoc, setOpenViewDoc] = useState(false);
   const [PDF_URL, setPDF_URL] = useState(null);
   const [selectedPE, setSelectedPE] = useState([]);
 
@@ -80,6 +82,14 @@ export default function PrintRequestTableRow({
 
   const handleViewPDFClose = () => {
     setOpenViewPDF(false);
+  };
+
+  const handleViewDocOpen = () => {
+    setOpenViewDoc(true);
+  };
+
+  const handleViewDocClose = () => {
+    setOpenViewDoc(false);
   };
 
   const handleOpenPRMenu = (event) => {
@@ -170,6 +180,17 @@ export default function PrintRequestTableRow({
         responseType: 'blob', // Important!
       });
       saveAs(response.data, `${employeeId}.pdf`);
+    } catch (error) {
+      console.error('Error fetching PDF:', error);
+    }
+  };
+
+  const handleClickDownloadDoc = async () => {
+    try {
+      const response = await axios.get(`/uploads/support_documents/${supportDocument}`, {
+        responseType: 'blob', // Important!
+      });
+      saveAs(response.data, supportDocument);
     } catch (error) {
       console.error('Error fetching PDF:', error);
     }
@@ -472,6 +493,35 @@ export default function PrintRequestTableRow({
         </TableCell>
       </TableRow>
 
+      <Dialog
+        fullScreen
+        open={openViewDoc}
+        onClose={handleViewDocClose}
+        TransitionComponent={Transition}
+      >
+        <AppBar sx={{ position: 'relative' }}>
+          <Toolbar>
+            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+              {supportDocument}
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<Iconify icon="eva:close-fill" />}
+              onClick={handleViewDocClose}
+            >
+              Close
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <iframe
+          title="pdf"
+          src={`/uploads/support_documents/${supportDocument}`} //     src={`${PDF_URL}#toolbar=0`}
+          height="100%"
+          width="100%"
+        />
+      </Dialog>
+
       {openViewPDF && (
         <Dialog
           fullScreen
@@ -510,7 +560,7 @@ export default function PrintRequestTableRow({
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{
-          sx: { width: 160 },
+          sx: { width: 'auto' },
         }}
       >
         {status !== 'pending' && (
@@ -551,7 +601,26 @@ export default function PrintRequestTableRow({
             Rejected
           </MenuItem>
         )}
-
+        <MenuItem
+          onClick={() => {
+            handleViewDocOpen();
+            handleClosePRMenu();
+          }}
+          // sx={{ color: 'warning.main' }}
+        >
+          <Iconify icon="solar:file-bold-duotone" sx={{ mr: 2 }} />
+          View Support Document
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleClickDownloadDoc();
+            handleClosePRMenu();
+          }}
+          // sx={{ color: 'warning.main' }}
+        >
+          <Iconify icon="solar:file-download-bold-duotone" sx={{ mr: 2 }} />
+          Download Support Document
+        </MenuItem>
         <MenuItem
           onClick={() => {
             handleClickOpenAlert();
@@ -620,7 +689,7 @@ export default function PrintRequestTableRow({
           }}
         >
           <Iconify icon="solar:eye-bold-duotone" sx={{ mr: 2 }} />
-          View PDF
+          View Card
         </MenuItem>
 
         {user.user_type === 'HR' && statusPE !== 'approved' ? null : (
@@ -631,7 +700,7 @@ export default function PrintRequestTableRow({
             }}
           >
             <Iconify icon="solar:download-bold-duotone" sx={{ mr: 2 }} />
-            Download PDF
+            Download Card
           </MenuItem>
         )}
         {/* {user.user_type!=='HR'&&(        <MenuItem
@@ -689,6 +758,7 @@ PrintRequestTableRow.propTypes = {
   createdBy: PropTypes.string,
   createdAt: PropTypes.string,
   status: PropTypes.string,
+  supportDocument: PropTypes.string,
   setRefresh: PropTypes.any,
   selected: PropTypes.any,
   handleClick: PropTypes.func,

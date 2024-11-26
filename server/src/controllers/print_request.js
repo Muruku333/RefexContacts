@@ -21,9 +21,10 @@ const PrintRequestController = {
         return Response.responseStatus(res, 400, "Validation Failed", errors);
       }
       const { status = "pending", printEmployees = [] } = req.body;
-
+      // console.log(req.uploadedFile);
       const printRequestData = {
         status,
+        support_document: req.uploadedFile.filename,
         created_by: req.userData.user_id,
         modified_by: req.userData.user_id,
       };
@@ -52,7 +53,7 @@ const PrintRequestController = {
         });
 
         let err = 0;
-        for (let i = 0; i < resultCHRO.length; i++) {
+        /* for (let i = 0; i < resultCHRO.length; i++) {
           const link = FRONT_END_URL; //  or call us at +91 95519 33890
           const mailSubject = "New Printing Card Request - Action Required";
           const mailContent = `<p>Hi ${resultCHRO[i].first_name} ${resultCHRO[i].last_name},</p>
@@ -87,7 +88,7 @@ const PrintRequestController = {
               }
             }
           );
-        }
+        }*/
 
         if (err) {
           return Response.responseStatus(
@@ -203,6 +204,7 @@ const PrintRequestController = {
             id,
             request_id,
             status,
+            support_document,
             created_by,
             cu_email,
             created_at,
@@ -266,6 +268,7 @@ const PrintRequestController = {
               id,
               request_id,
               status,
+              support_document,
               print_employees: printEmployeeData,
               created: {
                 created_by,

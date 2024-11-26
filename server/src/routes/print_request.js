@@ -2,6 +2,7 @@ const express = require("express");
 const PrintRequestController = require("../controllers/print_request");
 const auth = require("../middlewares/auth");
 const Role = require("../utils/userTypes");
+const uploadDocument = require("../middlewares/uploadDocument");
 const validation = require("../middlewares/printRequestValidator");
 
 const router = express.Router();
@@ -11,6 +12,8 @@ router
   .get(auth.authCheck, PrintRequestController.listPrintRequests)
   .post(
     auth.authCheck,
+    uploadDocument,
+    validation.parsePR,
     validation.createPrintRequest,
     PrintRequestController.createPrintRequest
   );

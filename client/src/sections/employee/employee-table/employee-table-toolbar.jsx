@@ -47,10 +47,14 @@ export default function EmployeeTableToolbar({
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const fileInput = useRef(null);
-  const [openImport, setOpenImport] = useState(false);
-  const [openAlert, setOpenAlert] = useState(false);
+  const docInput = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
+  const [docInfo, setDocInfo] = useState(null);
+  const [openImport, setOpenImport] = useState(false);
+  const [openDoc, setOpenDoc] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
   const [openProgress, setOpenProgress] = useState(false);
 
   const handleCloseProgress = () => {
@@ -67,6 +71,13 @@ export default function EmployeeTableToolbar({
     setFileInfo(file ? { name: file.name, size: file.size } : null);
   };
 
+  const handleDocChange = (event) => {
+    const file = event.target.files[0];
+
+    setSelectedDoc(file);
+    setDocInfo(file ? { name: file.name, size: file.size } : null);
+  };
+
   const handleFileDrop = (event) => {
     event.preventDefault();
 
@@ -75,6 +86,17 @@ export default function EmployeeTableToolbar({
 
       setSelectedFile(file);
       setFileInfo(file ? { name: file.name, size: file.size } : null);
+    }
+  };
+
+  const handleDocDrop = (event) => {
+    event.preventDefault();
+
+    if (event.dataTransfer.items && event.dataTransfer.items[0]) {
+      const file = event.dataTransfer.items[0].getAsFile();
+
+      setSelectedDoc(file);
+      setDocInfo(file ? { name: file.name, size: file.size } : null);
     }
   };
 
@@ -139,6 +161,10 @@ export default function EmployeeTableToolbar({
     fileInput.current.click();
   };
 
+  const handleClickDocUpload = () => {
+    docInput.current.click();
+  };
+
   const handleDragOver = (event) => {
     event.preventDefault();
   };
@@ -152,6 +178,17 @@ export default function EmployeeTableToolbar({
     setFileInfo(null);
     setSelectedFile(null);
     setOpenImport(false);
+  };
+
+  const handleOpenDoc = () => {
+    setOpenDoc(true);
+  };
+
+  const handleCloseDoc = (event, reason) => {
+    if (reason && (reason === 'backdropClick' || reason === 'escapeKeyDown')) return;
+    setDocInfo(null);
+    setSelectedDoc(null);
+    setOpenDoc(false);
   };
 
   const handleClickOpenAlert = () => {
@@ -173,8 +210,25 @@ export default function EmployeeTableToolbar({
 
   const handleSendPrintRequest = async () => {
     try {
+      const formData = new FormData();
+      formData.append('printEmployees', JSON.stringify(selectedEmployees));
+      formData.append('document', selectedDoc);
+      // // Append each employee to the printEmployees field
+      // selectedEmployees.forEach((employee) => {
+      //   formData.append('printEmployees[]', employee);
+      // });
+
+      // // Append the selected document
+      // if (selectedDoc) {
+      //   formData.append('document', selectedDoc);
+      // }
+
       await axios
-        .post(`/api/print_request`, { printEmployees: selectedEmployees })
+        .post(`/api/print_request`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
         .then((response) => {
           if (response.data.status) {
             enqueueSnackbar(response.data.message, { variant: 'success', action });
@@ -273,7 +327,7 @@ export default function EmployeeTableToolbar({
       {numSelected > 0 ? (
         <Stack direction="row" gap={2}>
           <Button
-            onClick={handleSendPrintRequest}
+            onClick={handleOpenDoc}
             color="success"
             endIcon={
               <Badge badgeContent={numSelected} color="success">
@@ -432,6 +486,108 @@ export default function EmployeeTableToolbar({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={openDoc}
+        onClose={handleCloseDoc}
+        PaperProps={{
+          component: 'form',
+          onSubmit: (event) => {
+            event.preventDefault();
+            handleSendPrintRequest();
+            // handleOpenProgress();
+            // handleFileUpload();
+            // const formData = new FormData(event.currentTarget);
+            // const formJson = Object.fromEntries(formData.entries());
+            // const email = formJson.email;
+            // console.log(selectedFile);
+            handleCloseDoc();
+          },
+        }}
+      >
+        <DialogTitle>Add Support Document</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            To send print request, Please drag and drop or select a support document *.pdf, *docx,
+            *.jpg file here.
+          </DialogContentText>
+          <Box
+            onClick={handleClickDocUpload}
+            onDrop={handleDocDrop}
+            onDragOver={handleDragOver}
+            sx={{
+              mt: '10px',
+              p: '20px',
+              border: '2px dashed #ccc',
+              borderRadius: '5px',
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="file"
+              ref={docInput}
+              accept=".pdf, .docx, .jpg"
+              style={{ display: 'none' }}
+              onChange={handleDocChange}
+            />
+            {docInfo ? (
+              <Stack direction="column" spacing={1}>
+                <Box
+                  component="img"
+                  src="/assets/files_icons/ic_pdf.svg"
+                  alt="icon"
+                  sx={{ height: 100, mx: 'auto' }}
+                />
+                <Stack direction="column" spacing={1}>
+                  <Typography variant="h6" display="block">
+                    {docInfo.name}
+                  </Typography>
+                  <Typography variant="body2" display="block">
+                    {`Size:${fData(docInfo.size)}`}
+                  </Typography>
+                </Stack>
+              </Stack>
+            ) : (
+              <Stack direction="column" spacing={1}>
+                <Box
+                  component="img"
+                  src="/assets/illustrations/file_upload.svg"
+                  sx={{ height: 100, mx: 'auto' }}
+                />
+                <Stack direction="column" spacing={1}>
+                  <Typography variant="h6" display="block">
+                    Drop or Select file
+                  </Typography>
+                  <Typography variant="body2" display="block">
+                    Drop files here or click
+                    <Box
+                      component="span"
+                      mx="4px"
+                      sx={{ textDecoration: 'underline', color: 'blue' }}
+                    >
+                      browse
+                    </Box>
+                    thorough your machine
+                  </Typography>
+                </Stack>
+              </Stack>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          {docInfo && (
+            <Button variant="contained" color="success" type="submit">
+              Send Request
+            </Button>
+          )}
+
+          <Button variant="contained" color="error" onClick={handleCloseDoc}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={openProgress} onClose={handleCloseProgress}>
         <DialogTitle>Importing Employees...!</DialogTitle>
         <DialogContent>
