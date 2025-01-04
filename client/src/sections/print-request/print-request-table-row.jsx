@@ -601,26 +601,30 @@ export default function PrintRequestTableRow({
             Rejected
           </MenuItem>
         )}
-        <MenuItem
-          onClick={() => {
-            handleViewDocOpen();
-            handleClosePRMenu();
-          }}
-          // sx={{ color: 'warning.main' }}
-        >
-          <Iconify icon="solar:file-bold-duotone" sx={{ mr: 2 }} />
-          View Support Document
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleClickDownloadDoc();
-            handleClosePRMenu();
-          }}
-          // sx={{ color: 'warning.main' }}
-        >
-          <Iconify icon="solar:file-download-bold-duotone" sx={{ mr: 2 }} />
-          Download Support Document
-        </MenuItem>
+        {supportDocument && (
+          <>
+            <MenuItem
+              onClick={() => {
+                handleViewDocOpen();
+                handleClosePRMenu();
+              }}
+              // sx={{ color: 'warning.main' }}
+            >
+              <Iconify icon="solar:file-bold-duotone" sx={{ mr: 2 }} />
+              View Support Document
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleClickDownloadDoc();
+                handleClosePRMenu();
+              }}
+              // sx={{ color: 'warning.main' }}
+            >
+              <Iconify icon="solar:file-download-bold-duotone" sx={{ mr: 2 }} />
+              Download Support Document
+            </MenuItem>
+          </>
+        )}
         <MenuItem
           onClick={() => {
             handleClickOpenAlert();
