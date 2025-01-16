@@ -139,6 +139,8 @@ export default function EmployeeEdit() {
         const response = await axios.get(`/api/employees/${employeeId}`);
         if (response.data.status) {
           const data = response.data.results[0];
+          // Fetch branches based on the selected company
+          fetchBranches(data.company.company_id);
           setEmployeeData((prev) => ({
             ...prev,
             employeeId: data.employee_id,
@@ -151,9 +153,6 @@ export default function EmployeeEdit() {
             companyId: data.company.company_id,
             branchId: data.branch.branch_id,
           }));
-
-          // Fetch branches based on the selected company
-          fetchBranches(data.company.company_id);
         } else {
           console.error('Error fetching employee data:', response.data.message);
         }
@@ -166,14 +165,23 @@ export default function EmployeeEdit() {
     fetchCompanies();
   }, [employeeId]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   setEmployeeData((prev) => {
+  //     if (branches.length > 0) {
+  //       return { ...prev, branchId: branches[0].branch_id };
+  //     }
+  //     return prev;
+  //   });
+  // }, [branches]);
+
+  const changeBranches = (br = []) => {
     setEmployeeData((prev) => {
-      if (branches.length > 0) {
-        return { ...prev, branchId: branches[0].branch_id };
+      if (br.length > 0) {
+        return { ...prev, branchId: br[0].branch_id };
       }
       return prev;
     });
-  }, [branches]);
+  };
 
   const handleInputChange = (field, value) => {
     const updatedEmployeeData = { ...employeeData };
@@ -437,8 +445,10 @@ export default function EmployeeEdit() {
                       onChange={(event, newValue) => {
                         if (newValue) {
                           handleInputChange('companyId', newValue.company_id);
+                          changeBranches(newValue.branches);
                           setBranches(newValue.branches);
                         } else {
+                          changeBranches([]);
                           setBranches([]);
                           handleInputChange('companyId', '');
                         }
