@@ -130,7 +130,7 @@ export default function EmployeeVCard() {
         sx={{
           // top: 30,
           // left: 150,
-          mt: 3,
+          // mt: 2,
           overflow: 'hidden',
           // position: 'absolute',
           verticalAlign: 'bottom',
@@ -277,135 +277,181 @@ export default function EmployeeVCard() {
 
   const renderLinks = (
     <Stack
-      spacing={2}
+      gap={2}
       sx={{
         mt: 5,
         color: 'common.black',
       }}
     >
-      <Stack direction="row">
-        <Iconify width={24} icon="ri:whatsapp-fill" sx={{ mr: 1.5 }} />
-        <Link
-          href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            // }),
-          }}
-        >
-          WhatsApp me
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="ri:whatsapp-fill" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              // }),
+            }}
+          >
+            WhatsApp me
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="ic:round-email" sx={{ mr: 1.5 }} />
-        <Link
-          href={`mailto:${employee.email}`}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          Email me
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="ic:round-email" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={`mailto:${employee.email}`}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            Email me
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="fluent:globe-search-24-filled" sx={{ mr: 1.5 }} />
-        <Link
-          href={employee.company.company_website}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          {employee.company.company_website.replace(/^https?:\/\//, '')}
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="fluent:globe-search-24-filled" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={employee.company.company_website}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            {employee.company.company_website.replace(/^https?:\/\//, '')}
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
-        <Link
-          href={employee.branch.google_map_link}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          {employee.branch.branch_address}
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="mdi:location" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={employee.branch.google_map_link}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            {employee.branch.branch_address}
+          </Link>
+        </Box>
       </Stack>
     </Stack>
   );
 
+  // const renderButtons = (
+  //   <Box display="flex" justifyContent="center" alignItems="center">
+  //     <Stack
+  //       direction="row"
+  //       spacing={4}
+  //       sx={{
+  //         mt: 3,
+  //       }}
+  //     >
+  //       <Button
+  //         variant="contained"
+  //         onClick={handleClickSave}
+  //         startIcon={<Iconify width={24} icon="solar:user-plus-rounded-bold-duotone" />}
+  //         sx={{ width: 150 }}
+  //       >
+  //         Save
+  //       </Button>
+  //       <Button
+  //         variant="contained"
+  //         onClick={handleClickShare}
+  //         startIcon={<Iconify width={24} icon="solar:share-bold-duotone" />}
+  //         sx={{ width: 150 }}
+  //       >
+  //         Share
+  //       </Button>
+  //     </Stack>
+  //   </Box>
+  // );
   const renderButtons = (
-    <Box display="flex" justifyContent="center" alignItems="center">
+    <Box display="flex" justifyContent="center" alignItems="center" width="100%">
       <Stack
-        direction="row"
-        spacing={4}
-        sx={{
-          mt: 3,
-        }}
+        direction={{ xs: 'column', sm: 'row' }} // Vertical on mobile, horizontal on larger screens
+        justifyContent="center"
+        alignItems="center"
+        spacing={{ xs: 2, sm: 4 }}
+        sx={{ mt: 3, width: '100%', alignItems: 'center' }}
       >
         <Button
           variant="contained"
           onClick={handleClickSave}
           startIcon={<Iconify width={24} icon="solar:user-plus-rounded-bold-duotone" />}
-          sx={{ width: 150 }}
+          sx={{
+            width: { xs: '100%', sm: 150 }, // Full width on mobile, fixed width on larger screens
+          }}
         >
           Save
         </Button>
@@ -413,7 +459,9 @@ export default function EmployeeVCard() {
           variant="contained"
           onClick={handleClickShare}
           startIcon={<Iconify width={24} icon="solar:share-bold-duotone" />}
-          sx={{ width: 150 }}
+          sx={{
+            width: { xs: '100%', sm: 150 },
+          }}
         >
           Share
         </Button>
@@ -422,70 +470,135 @@ export default function EmployeeVCard() {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ backgroundColor: '#282829', height: '110vh' }}>
-      <Stack direction="column" alignItems="center" justifyContent="space-around" height="750px">
+    // <Container maxWidth="xl" sx={{ backgroundColor: '#282829' }}>
+    //   <Stack direction="row" alignItems="center" justifyContent="center" height="750px" p={2}>
+    //     <Box
+    //       sx={{
+    //         width: 460,
+    //         height: '100%',
+    //         borderRadius: 2,
+    //         background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+    //         padding: '5px', // Adjust padding to control border width
+    //         display: 'inline-block',
+    //       }}
+    //     >
+    //       <Card
+    //         sx={{
+    //           width: '100%',
+    //           height: '100%',
+    //         }}
+    //       >
+    //         <Box
+    //           sx={{
+    //             //   position: 'relative',
+    //             // pt: 'calc(100% * 3 / 4)',
+    //             // ...((latestPostLarge || latestPost) && {
+    //             // pt: 'calc(100% * 4 / 3)',
+    //             '&:after': {
+    //               top: 0,
+    //               content: "''",
+    //               width: '100%',
+    //               height: '100%',
+    //               position: 'absolute',
+    //               bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
+    //             },
+    //             // }),
+    //             // ...(latestPostLarge && {
+    //             //   pt: {
+    //             //     xs: 'calc(100% * 4 / 3)',
+    //             //     sm: 'calc(100% * 3 / 4.66)',
+    //             //   },
+    //             // }),
+    //           }}
+    //         >
+    //           {/* {renderLogo}
+    //           {renderAvatar} */}
+    //           {renderCover}
+    //         </Box>
+
+    //         <Box
+    //           sx={{
+    //             p: { xs: 2, sm: 5 },
+    //             // ...((latestPostLarge || latestPost) && {
+    //             width: 1,
+    //             // bottom: 0,
+    //             top: 0,
+    //             position: 'absolute',
+    //             // }),
+    //           }}
+    //         >
+    //           {renderLogo}
+
+    //           {renderAvatar}
+
+    //           {renderName}
+
+    //           {renderLinks}
+
+    //           {renderButtons}
+    //         </Box>
+    //       </Card>
+    //     </Box>
+    //   </Stack>
+    // </Container>
+    <Container maxWidth="xl" sx={{ backgroundColor: '#282829', minHeight: '100vh', py: 2 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="center"
+        sx={{
+          minHeight: '80vh', // Adaptive vertical height
+          // px: 2,
+        }}
+      >
         <Box
           sx={{
-            width: 460,
-            height: '100%',
+            width: { xs: '100%', sm: '80%', md: '60%', lg: '460px' }, // Responsive width
             borderRadius: 2,
             background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
-            padding: '5px', // Adjust padding to control border width
-            display: 'inline-block',
+            p: '5px',
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
           <Card
             sx={{
               width: '100%',
-              height: '100%',
+              position: 'relative', // Needed for inner absolute box
+              minHeight: { xs: 750, sm: 750, md: 750 }, // Responsive height
             }}
           >
             <Box
               sx={{
-                //   position: 'relative',
-                // pt: 'calc(100% * 3 / 4)',
-                // ...((latestPostLarge || latestPost) && {
-                pt: 'calc(100% * 4 / 3)',
+                height: '100%',
                 '&:after': {
-                  top: 0,
                   content: "''",
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
                   width: '100%',
                   height: '100%',
-                  position: 'absolute',
                   bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
+                  zIndex: 1,
                 },
-                // }),
-                // ...(latestPostLarge && {
-                //   pt: {
-                //     xs: 'calc(100% * 4 / 3)',
-                //     sm: 'calc(100% * 3 / 4.66)',
-                //   },
-                // }),
               }}
             >
-              {/* {renderLogo}
-              {renderAvatar} */}
               {renderCover}
             </Box>
 
             <Box
               sx={{
-                p: (theme) => theme.spacing(4),
-                // ...((latestPostLarge || latestPost) && {
-                width: 1,
-                bottom: 0,
                 position: 'absolute',
-                // }),
+                top: 0,
+                width: '100%',
+                zIndex: 2, // Above the overlay
+                p: { xs: 2, sm: 4 },
               }}
             >
               {renderLogo}
-
               {renderAvatar}
-
               {renderName}
-
               {renderLinks}
-
               {renderButtons}
             </Box>
           </Card>

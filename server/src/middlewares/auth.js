@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { APP_KEY } = process.env;
+const { APP_KEY, API_KEY } = process.env;
 const userModel = require("../models/users");
 const Response = require("../helpers/response");
 
@@ -54,4 +54,21 @@ exports.authAllowTypes = (types = []) => {
     // }
     // return next();
   };
+};
+
+exports.validateAPI = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (authorization && authorization.startsWith("Bearer")) {
+    const token = authorization.substr(7);
+    try {
+      const data = jwt.verify(token, API_KEY);
+      if (data) {
+        req.userData = data;
+        return next();
+      }
+    } catch (error) {
+      return Response.responseStatus(res, 401, "Invalid token", error);
+    }
+  }
+  return Response.responseStatus(res, 401, "Authorization needed");
 };

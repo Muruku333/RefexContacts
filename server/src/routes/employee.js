@@ -10,10 +10,25 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router
+  .route("/employees/active")
+  .get(
+    auth.validateAPI,
+    EmployeeController.getAllActiveEmployeesWithMappedData
+  );
+
+router
   .route("/employees/inactive")
   .get(
     auth.authCheck,
     EmployeeController.getAllInActiveEmployeesWithMappedData
+  );
+
+router
+  .route("/employees/sync_qr_codes")
+  .post(
+    auth.validateAPI,
+    auth.authType(userTypes.SuperAdmin),
+    EmployeeController.syncQRCodeImages
   );
 
 router

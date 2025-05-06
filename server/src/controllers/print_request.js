@@ -600,11 +600,11 @@ const PrintRequestController = {
             }
           }
 
-          const adminMailSubject = "Visiting Card Print Request";
+          const adminMailSubject = "Visiting Card Print Request"; //- ${resultMU[0].user_type}
           const adminMailContent = `
           <p>Dear Admin,</p>
           
-          <p>We hope this message finds you well. We are pleased to inform you that the visiting card print request has been approved by <strong>${resultMU[0].first_name} ${resultMU[0].last_name} - ${resultMU[0].user_type}</strong>.</p>
+          <p>We hope this message finds you well. We are pleased to inform you that the visiting card print request has been approved by <strong>${resultMU[0].first_name} ${resultMU[0].last_name}</strong>.</p>
           
           <p>Please find the attached PDF with the details required for printing the visiting cards.</p>
           
@@ -643,7 +643,7 @@ const PrintRequestController = {
             }
           );
 
-          const mailSubject = "Request Status Update - Refex Contacts";
+          const mailSubject = "Request Status Update - Refex Contacts"; //(${resultMU[0].user_type})
           const mailContent = `<p>Hi ${resultCU[0].first_name} ${
             resultCU[0].last_name
           },</p>
@@ -656,7 +656,7 @@ const PrintRequestController = {
           }</li>
           <li><strong>Updated By:</strong> ${resultMU[0].first_name} ${
             resultMU[0].last_name
-          }(${resultMU[0].user_type})</li>
+          }</li>
       </ul>
       <p>You can view the updated status by logging in to the Refex Contacts app. Click <a href="${link}">here</a> to access your account.</p>
 
@@ -690,7 +690,7 @@ const PrintRequestController = {
             }
           );
         } else {
-          const mailSubject = "Request Status Update - Refex Contacts";
+          const mailSubject = "Request Status Update - Refex Contacts"; //(${resultMU[0].user_type})
           const mailContent = `<p>Hi ${resultCU[0].first_name} ${
             resultCU[0].last_name
           },</p>
@@ -703,7 +703,7 @@ const PrintRequestController = {
         }</li>
         <li><strong>Updated By:</strong> ${resultMU[0].first_name} ${
             resultMU[0].last_name
-          }(${resultMU[0].user_type})</li>
+          }</li>
     </ul>
     <p>You can view the updated status by logging in to the Refex Contacts app. Click <a href="${link}">here</a> to access your account.</p>
     <p>Navigate to the 'Requests' section to find the specific request and review the latest status and comments provided by the CHRO. If you have any questions or concerns, please feel free to reach out to our support team at helpdesk@refex.co.in</p>
@@ -1075,11 +1075,11 @@ const PrintRequestController = {
           }
         }
 
-        const adminMailSubject = "Visiting Card Print Request";
+        const adminMailSubject = "Visiting Card Print Request"; //- ${resultMU[0].user_type}
         const adminMailContent = `
         <p>Dear Admin,</p>
         
-        <p>We hope this message finds you well. We are pleased to inform you that the visiting card print request has been approved by <strong>${resultMU[0].first_name} ${resultMU[0].last_name} - ${resultMU[0].user_type}</strong>.</p>
+        <p>We hope this message finds you well. We are pleased to inform you that the visiting card print request has been approved by <strong>${resultMU[0].first_name} ${resultMU[0].last_name}</strong>.</p>
         
         <p>Please find the attached PDF with the details required for printing the visiting cards.</p>
         
@@ -1118,7 +1118,7 @@ const PrintRequestController = {
           }
         );
 
-        const mailSubject = "Request Status Update - Refex Contacts";
+        const mailSubject = "Request Status Update - Refex Contacts"; //(${resultMU[0].user_type})
         const mailContent = `<p>Hi ${resultCU[0].first_name} ${
           resultCU[0].last_name
         },</p>
@@ -1132,7 +1132,7 @@ const PrintRequestController = {
         <li><strong>Selected Employee IDs:</strong> ${emp_rows}</li>
         <li><strong>Updated By:</strong> ${resultMU[0].first_name} ${
           resultMU[0].last_name
-        }(${resultMU[0].user_type})</li>
+        }</li>
     </ul>
     <p>You can view the updated status by logging in to the Refex Contacts app. Click <a href="${link}">here</a> to access your account.</p>
 
@@ -1166,7 +1166,7 @@ const PrintRequestController = {
           }
         );
       } else {
-        const mailSubject = "Request Status Update - Refex Contacts";
+        const mailSubject = "Request Status Update - Refex Contacts"; //(${resultMU[0].user_type})
         const mailContent = `<p>Hi ${resultCU[0].first_name} ${
           resultCU[0].last_name
         },</p>
@@ -1179,7 +1179,7 @@ const PrintRequestController = {
       }</li>
       <li><strong>Updated By:</strong> ${resultMU[0].first_name} ${
           resultMU[0].last_name
-        }(${resultMU[0].user_type})</li>
+        }</li>
   </ul>
   <p>You can view the updated status by logging in to the Refex Contacts app. Click <a href="${link}">here</a> to access your account.</p>
   <p>Navigate to the 'Requests' section to find the specific request and review the latest status and comments provided by the CHRO. If you have any questions or concerns, please feel free to reach out to our support team at helpdesk@refex.co.in</p>
@@ -1249,7 +1249,7 @@ const PrintRequestController = {
           branch_address,
           google_map_link,
         } = rows[0];
-        const URL = APP_URL || "http://loacalhost:3001";
+        const URL = APP_URL || "http://localhost:3001";
         const qrCodeUrl = URL.concat(`/vcard/${employee_id}`);
         const logo = (await company_logo)
           ? Buffer.from(company_logo, "binary").toString()

@@ -3,11 +3,43 @@ const CompanyModel = require("../models/company");
 const BranchModel = require("../models/company_branches");
 const qs = require("querystring");
 const fs = require("fs");
+const path = require("path");
+const QRCode = require("qrcode");
 const vCardsJS = require("vcards-js");
 const xlsx = require("xlsx");
 const Response = require("../helpers/response");
 const { validationResult } = require("express-validator");
 const { APP_URL, LIMIT_DATA } = process.env;
+
+// Create the directory if it doesn't exist
+const qrDir = path.join(__dirname, "..", "..", "uploads", "qr_codes");
+if (!fs.existsSync(qrDir)) {
+  fs.mkdirSync(qrDir, { recursive: true });
+}
+
+// Function to generate and save QR code image
+async function generateQRCodeImage(employeeId) {
+  const URL = APP_URL || "http://localhost:3001";
+  const qrCodeUrl = URL.concat(`/vcard/${employeeId}`);
+  // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  // const fileName = `${employeeId}-${uniqueSuffix}.png`;
+  // const filePath = path.join(qrDir, fileName);
+  const fileName = `${employeeId}.png`;
+  const filePath = path.join(qrDir, fileName);
+
+  try {
+    await QRCode.toFile(filePath, qrCodeUrl, {
+      errorCorrectionLevel: "L",
+      margin: 1,
+      width: 200, // Customize the size as needed
+    });
+    // console.log("QR code image saved:", filePath);
+    return fileName;
+  } catch (err) {
+    console.error("Failed to generate QR code:", err);
+    throw err;
+  }
+}
 
 const EmployeeController = {
   createEmployee: async (req, res) => {
@@ -48,11 +80,13 @@ const EmployeeController = {
         landline,
         email,
         photo,
+        qr_code: await generateQRCodeImage(employeeId),
         company_id: companyId,
         branch_id: branchId,
         created_by: createdBy,
         modified_by: createdBy,
       };
+
       const result = await EmployeeModel.createEmployee(employee_data);
       if (result.insertId > 0) {
         return Response.responseStatus(
@@ -92,6 +126,7 @@ const EmployeeController = {
           const landline = employeesData[i]["Landline"] || null;
           const email = employeesData[i]["Email"];
           const photo = null;
+          const qr_code = await generateQRCodeImage(employee_id);
           const is_active = employeesData[i]["Active"].toLowerCase() === "yes";
           const company_name = employeesData[i]["Company Name"];
           const branch_name = employeesData[i]["Branch Name"];
@@ -123,6 +158,7 @@ const EmployeeController = {
               landline,
               email,
               photo,
+              qr_code,
               is_active,
               company_id: companyResult[0].company_id,
               branch_id: branchResult[0].branch_id,
@@ -316,6 +352,82 @@ const EmployeeController = {
           "List of all active employees ",
           employeeData,
           pageInfo
+        );
+      }
+      return Response.responseStatus(res, 400, "No data found");
+    } catch (error) {
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+
+  getAllActiveEmployeesWithMappedData: async (req, res) => {
+    try {
+      const rows = await EmployeeModel.getAllActiveEmployeesWithMappedData();
+      if (rows.length > 0) {
+        let employeeData = [];
+        const URL = APP_URL || "http://localhost:3001";
+
+        rows.map((row) => {
+          const {
+            ep_id,
+            employee_id,
+            employee_name,
+            designation,
+            mobile_number,
+            landline,
+            email,
+            photo,
+            qr_code,
+            is_active,
+            company_id,
+            branch_id,
+            company_name,
+            company_website,
+            company_logo,
+            branch_name,
+            branch_address,
+            google_map_link,
+          } = row;
+
+          employeeData = [
+            ...employeeData,
+            {
+              id: ep_id,
+              employee_id,
+              employee_name,
+              designation,
+              mobile_number,
+              landline,
+              email,
+              photo: photo ? Buffer.from(photo, "binary").toString() : null,
+              qr_code_image: qr_code
+                ? URL.concat(`/uploads/qr_codes/${qr_code}`)
+                : null,
+              is_active,
+              company: {
+                company_id: company_id,
+                company_name,
+                company_website,
+                company_logo: company_logo
+                  ? Buffer.from(company_logo, "binary").toString()
+                  : null,
+              },
+              branch: {
+                branch_id: branch_id,
+                branch_name,
+                branch_address,
+                google_map_link,
+              },
+            },
+          ];
+        });
+        return Response.responseStatus(
+          res,
+          200,
+          "List of all active employees ",
+          employeeData
         );
       }
       return Response.responseStatus(res, 400, "No data found");
@@ -756,6 +868,30 @@ const EmployeeController = {
           `No data found for ${employee_id}`
         );
       }
+    } catch (error) {
+      console.log(error.message);
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+
+  syncQRCodeImages: async (req, res) => {
+    try {
+      const rows = await EmployeeModel.getAllEmployees();
+      if (rows.length) {
+        for (let i = 0; i < rows.length; i++) {
+          const id = rows[i].id;
+          const employee_id = rows[i].employee_id;
+          const is_qr_exists = rows[i].qr_code;
+          if (!is_qr_exists) {
+            const qr_code = await generateQRCodeImage(employee_id);
+            await EmployeeModel.updateEmployeeById(id, { qr_code });
+          }
+        }
+        return Response.responseStatus(res, 200, "QR code images generated");
+      }
+      return Response.responseStatus(res, 400, "No Employees");
     } catch (error) {
       console.log(error.message);
       return Response.responseStatus(res, 500, "Internal server error", {

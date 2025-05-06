@@ -20,9 +20,9 @@ const EmployeeModel = {
     return rows;
   },
 
-  getAllEmployeeWithMapedData: async()=>{
+  getAllEmployeeWithMapedData: async () => {
     const [rows, fields] = await db.query(
-      `SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active,
+      `SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active,
       cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
   FROM ${table} AS ep
   INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
@@ -33,7 +33,7 @@ const EmployeeModel = {
 
   getEmployeesByCondition: async (cond) => {
     const [rows, fields] = await db.query(`
-            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active, ep.company_id, ep.branch_id,
+            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active, ep.company_id, ep.branch_id,
                 cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
             FROM ${table} AS ep
             INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
@@ -47,14 +47,14 @@ const EmployeeModel = {
 
   getEmployeeByCondition: async (cond) => {
     const [rows, fields] = await db.query(
-      `SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active, ep.company_id, ep.branch_id,
+      `SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active, ep.company_id, ep.branch_id,
       cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
   FROM ${table} AS ep
   INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
   INNER JOIN ${table2} AS cpb ON ep.branch_id = cpb.branch_id
   WHERE ${Object.keys(cond)
-        .map((item) => `${item} = '${cond[item]}'`)
-        .join(" AND ")}`
+    .map((item) => `${item} = '${cond[item]}'`)
+    .join(" AND ")}`
     );
     return rows;
   },
@@ -69,9 +69,20 @@ const EmployeeModel = {
     return rows;
   },
 
+  getAllActiveEmployeesWithMappedData: async () => {
+    const [rows, fields] = await db.query(`
+            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active, ep.company_id, ep.branch_id,
+                cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
+            FROM ${table} AS ep
+            INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
+            INNER JOIN ${table2} AS cpb ON ep.branch_id = cpb.branch_id WHERE ep.is_active = 1;
+        `);
+    return rows;
+  },
+
   getAllInActiveEmployeesWithMappedData: async () => {
     const [rows, fields] = await db.query(`
-            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active, ep.company_id, ep.branch_id,
+            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active, ep.company_id, ep.branch_id,
                 cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
             FROM ${table} AS ep
             INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id
@@ -93,7 +104,7 @@ const EmployeeModel = {
   getEmployeeByEmployeeIdWithMappedData: async (id) => {
     const [rows, fields] = await db.query(
       `
-            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.is_active, ep.company_id, ep.branch_id,
+            SELECT ep.id AS ep_id, ep.employee_id, ep.employee_name, ep.designation, ep.mobile_number, ep.landline, ep.email, ep.photo, ep.qr_code, ep.is_active, ep.company_id, ep.branch_id,
                 cp.id AS cp_id, cp.company_id, cp.company_name, cp.company_website, cp.company_logo,  cpb.branch_id, cpb.branch_name, cpb.branch_address, cpb.google_map_link, cpb.company_id
             FROM ${table} AS ep
             INNER JOIN ${table1} AS cp ON ep.company_id = cp.company_id

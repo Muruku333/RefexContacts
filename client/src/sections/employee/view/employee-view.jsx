@@ -267,165 +267,352 @@ export default function EmployeeView() {
 
   const renderLinks = (
     <Stack
-      spacing={2}
+      gap={2}
       sx={{
-        mt: 5,
+        mt: 4,
         color: 'common.black',
       }}
     >
-      <Stack direction="row">
-        <Iconify width={24} icon="ri:whatsapp-fill" sx={{ mr: 1.5 }} />
-        <Link
-          href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            // }),
-          }}
-        >
-          WhatsApp me
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="ri:whatsapp-fill" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={`https://api.whatsapp.com/send?phone=91${employee.mobile_number}`}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              // }),
+            }}
+          >
+            WhatsApp me
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="ic:round-email" sx={{ mr: 1.5 }} />
-        <Link
-          href={`mailto:${employee.email}`}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          Email me
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="ic:round-email" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={`mailto:${employee.email}`}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            Email me
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="fluent:globe-search-24-filled" sx={{ mr: 1.5 }} />
-        <Link
-          href={employee.company.company_website}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          {employee.company.company_website.replace(/^https?:\/\//, '')}
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="fluent:globe-search-24-filled" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={employee.company.company_website}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            {employee.company.company_website.replace(/^https?:\/\//, '')}
+          </Link>
+        </Box>
       </Stack>
 
-      <Stack direction="row">
-        <Iconify width={24} icon="mdi:location" sx={{ mr: 1.5 }} />
-        <Link
-          href={employee.branch.google_map_link}
-          color="inherit"
-          variant="subtitle2"
-          underline="hover"
-          target="_blank" // Open in a new tab
-          rel="noopener noreferrer"
-          sx={{
-            // height: 44,
-            overflow: 'hidden',
-            WebkitLineClamp: 2,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            typography: 'subtitle2',
-            // height: 60,
-            // ...(latestPostLarge && { typography: 'h5', height: 60 }),
-            // ...((latestPostLarge || latestPost) && {
-            color: 'common.black',
-            // }),
-          }}
-        >
-          {employee.branch.branch_address}
-        </Link>
+      <Stack direction="row" gap={1.5} alignItems="center">
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Iconify width={24} icon="mdi:location" />
+        </Box>
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Link
+            href={employee.branch.google_map_link}
+            color="inherit"
+            variant="subtitle2"
+            underline="hover"
+            target="_blank" // Open in a new tab
+            rel="noopener noreferrer"
+            sx={{
+              // height: 44,
+              overflow: 'hidden',
+              WebkitLineClamp: 2,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              typography: 'subtitle2',
+              // height: 60,
+              // ...(latestPostLarge && { typography: 'h5', height: 60 }),
+              // ...((latestPostLarge || latestPost) && {
+              color: 'common.black',
+              // }),
+            }}
+          >
+            {employee.branch.branch_address}
+          </Link>
+        </Box>
       </Stack>
     </Stack>
   );
 
   return (
+    // <Container>
+    //   <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+    //     <Typography variant="h4">Employee Preview</Typography>
+
+    //     <Stack direction="row" alignItems="center" gap={3}>
+    //       <Button
+    //         onClick={() => {
+    //           router.push('/employees/list');
+    //         }}
+    //         // href="/employees/list"
+    //         variant="contained"
+    //         color="error"
+    //         // component={RouterLink}
+    //         startIcon={<Iconify icon="eva:arrow-back-fill" />}
+    //       >
+    //         Back to list
+    //       </Button>
+    //     </Stack>
+    //   </Stack>
+
+    //   <Grid container spacing={2} columns={{ xs: 4, sm: 12, md: 12 }} width="100%">
+    //     <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
+    //       <Box
+    //         sx={{
+    //           width: 460,
+    //           height: '100%',
+    //           borderRadius: 2,
+    //           background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
+    //           padding: '5px', // Adjust padding to control border width
+    //           display: 'inline-block',
+    //         }}
+    //       >
+    //         <Card
+    //           sx={{
+    //             width: '100%',
+    //             height: '100%',
+    //           }}
+    //         >
+    //           <Box
+    //             sx={{
+    //               //   position: 'relative',
+    //               // pt: 'calc(100% * 3 / 4)',
+    //               // ...((latestPostLarge || latestPost) && {
+    //               pt: 'calc(100% * 4 / 3)',
+    //               '&:after': {
+    //                 top: 0,
+    //                 content: "''",
+    //                 width: '100%',
+    //                 height: '100%',
+    //                 position: 'absolute',
+    //                 bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
+    //               },
+    //               // }),
+    //               // ...(latestPostLarge && {
+    //               //   pt: {
+    //               //     xs: 'calc(100% * 4 / 3)',
+    //               //     sm: 'calc(100% * 3 / 4.66)',
+    //               //   },
+    //               // }),
+    //             }}
+    //           >
+    //             {/* {renderLogo}
+    //           {renderAvatar} */}
+    //             {renderCover}
+    //           </Box>
+
+    //           <Box
+    //             sx={{
+    //               p: (theme) => theme.spacing(4),
+    //               // ...((latestPostLarge || latestPost) && {
+    //               width: 1,
+    //               top: 0,
+    //               position: 'absolute',
+    //               // }),
+    //             }}
+    //           >
+    //             {renderLogo}
+
+    //             {renderAvatar}
+
+    //             {renderName}
+
+    //             {renderLinks}
+    //           </Box>
+    //         </Card>
+    //       </Box>
+    //     </Grid>
+    //     <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
+    //       <Card
+    //         sx={{
+    //           p: 6,
+    //           width: 1,
+    //           maxWidth: 450,
+    //           height: '100%',
+    //         }}
+    //       >
+    //         <Stack justifyContent="center" alignItems="center" gap={4}>
+    //           <Box ref={qrRef} sx={{ p: 2 }}>
+    //             <Box sx={{ border: '3px solid black', borderRadius: 3, p: 1 }}>
+    //               <QRCode
+    //                 value={`https://contacts.dev.refex.group/vcard/${employeeId}`}
+    //                 logoImage={employee.company.company_logo}
+    //                 ecLevel="M"
+    //                 logoWidth={57}
+    //                 logoHeight={34}
+    //                 size={200}
+    //                 qrStyle="dots"
+    //                 eyeRadius={10}
+    //                 removeQrCodeBehindLogo
+    //                 logoPadding={4}
+    //               />
+    //             </Box>
+    //           </Box>
+    //           <Button
+    //             fullWidth
+    //             onClick={downloadQRCode}
+    //             // href="/employees/list"
+    //             variant="contained"
+    //             color="info"
+    //             // component={RouterLink}
+    //             startIcon={<Iconify icon="solar:download-minimalistic-line-duotone" />}
+    //           >
+    //             Download
+    //           </Button>
+
+    //           <Button
+    //             onClick={() => {
+    //               router.push(`/employees/edit/${employeeId}`);
+    //             }}
+    //             // href="/employees/list"
+    //             variant="contained"
+    //             color="info"
+    //             fullWidth
+    //             // component={RouterLink}
+    //             startIcon={<Iconify icon="solar:pen-bold-duotone" />}
+    //           >
+    //             Edit
+    //           </Button>
+
+    //           <Button
+    //             onClick={() => {
+    //               router.push(`/vcard/${employeeId}`);
+    //             }}
+    //             disabled={!employee.is_active}
+    //             // href="/employees/list"
+    //             variant="contained"
+    //             color="info"
+    //             fullWidth
+    //             // component={RouterLink}
+    //             startIcon={<Iconify icon="solar:link-bold-duotone" />}
+    //           >
+    //             Live Link
+    //           </Button>
+
+    //           <Button
+    //             onClick={handleClickActiveChange}
+    //             // href="/employees/list"
+    //             variant="contained"
+    //             color={employee.is_active ? 'error' : 'success'}
+    //             fullWidth
+    //             // component={RouterLink}
+    //             startIcon={<Iconify icon="solar:power-bold-duotone" />}
+    //           >
+    //             {employee.is_active ? 'Deactivate' : 'Activate'}
+    //           </Button>
+    //         </Stack>
+    //       </Card>
+    //     </Grid>
+    //   </Grid>
+    // </Container>
     <Container>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        justifyContent="space-between"
+        mb={5}
+        gap={2}
+      >
         <Typography variant="h4">Employee Preview</Typography>
 
-        <Stack direction="row" alignItems="center" gap={3}>
-          <Button
-            onClick={() => {
-              router.push('/employees/list');
-            }}
-            // href="/employees/list"
-            variant="contained"
-            color="error"
-            // component={RouterLink}
-            startIcon={<Iconify icon="eva:arrow-back-fill" />}
-          >
-            Back to list
-          </Button>
-        </Stack>
+        <Button
+          onClick={() => {
+            router.push('/employees/list');
+          }}
+          variant="contained"
+          color="error"
+          startIcon={<Iconify icon="eva:arrow-back-fill" />}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            alignSelf: { xs: 'stretch', sm: 'auto' },
+          }}
+        >
+          Back to list
+        </Button>
       </Stack>
 
       <Grid container spacing={2} columns={{ xs: 4, sm: 12, md: 12 }} width="100%">
-        <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
+        {/* Left Card with Gradient */}
+        <Grid item xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
           <Box
             sx={{
-              width: 460,
-              height: '100%',
+              width: { xs: '100%', sm: '80%', md: 460 },
               borderRadius: 2,
               background: 'linear-gradient(90deg, #2879b6 25%, #7dc244 50%, #ee6a31 100%)',
-              padding: '5px', // Adjust padding to control border width
-              display: 'inline-block',
+              padding: '5px',
+              display: 'flex',
+              justifyContent: 'center',
             }}
           >
             <Card
-              sx={{
-                width: '100%',
-                height: '100%',
-              }}
+              sx={{ width: '100%', position: 'relative', minHeight: { xs: 650, sm: 650, md: 650 } }}
             >
               <Box
                 sx={{
-                  //   position: 'relative',
-                  // pt: 'calc(100% * 3 / 4)',
-                  // ...((latestPostLarge || latestPost) && {
                   pt: 'calc(100% * 4 / 3)',
                   '&:after': {
                     top: 0,
@@ -435,48 +622,36 @@ export default function EmployeeView() {
                     position: 'absolute',
                     bgcolor: (theme) => alpha(theme.palette.grey[300], 0.1),
                   },
-                  // }),
-                  // ...(latestPostLarge && {
-                  //   pt: {
-                  //     xs: 'calc(100% * 4 / 3)',
-                  //     sm: 'calc(100% * 3 / 4.66)',
-                  //   },
-                  // }),
                 }}
               >
-                {/* {renderLogo}
-              {renderAvatar} */}
                 {renderCover}
               </Box>
 
               <Box
                 sx={{
-                  p: (theme) => theme.spacing(4),
-                  // ...((latestPostLarge || latestPost) && {
-                  width: 1,
-                  bottom: 0,
+                  p: 4,
+                  width: '100%',
                   position: 'absolute',
-                  // }),
+                  top: 0,
                 }}
               >
                 {renderLogo}
-
                 {renderAvatar}
-
                 {renderName}
-
                 {renderLinks}
               </Box>
             </Card>
           </Box>
         </Grid>
-        <Grid xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
+
+        {/* Right QR & Buttons */}
+        <Grid item xs={4} sm={6} md={6} display="flex" justifyContent="center" alignItems="center">
           <Card
             sx={{
-              p: 6,
-              width: 1,
+              p: { xs: 3, sm: 6 },
+              width: '100%',
               maxWidth: 450,
-              height: '100%',
+              height: 1,
             }}
           >
             <Stack justifyContent="center" alignItems="center" gap={4}>
@@ -496,58 +671,50 @@ export default function EmployeeView() {
                   />
                 </Box>
               </Box>
-              <Button
-                fullWidth
-                onClick={downloadQRCode}
-                // href="/employees/list"
-                variant="contained"
-                color="info"
-                // component={RouterLink}
-                startIcon={<Iconify icon="solar:download-minimalistic-line-duotone" />}
-              >
-                Download
-              </Button>
 
-              <Button
-                onClick={() => {
-                  router.push(`/employees/edit/${employeeId}`);
-                }}
-                // href="/employees/list"
-                variant="contained"
-                color="info"
-                fullWidth
-                // component={RouterLink}
-                startIcon={<Iconify icon="solar:pen-bold-duotone" />}
-              >
-                Edit
-              </Button>
+              {/* Responsive Buttons */}
+              <Stack spacing={2} width="100%">
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={downloadQRCode}
+                  startIcon={<Iconify icon="solar:download-minimalistic-line-duotone" />}
+                  sx={{ width: '100%' }}
+                >
+                  Download
+                </Button>
 
-              <Button
-                onClick={() => {
-                  router.push(`/vcard/${employeeId}`);
-                }}
-                disabled={!employee.is_active}
-                // href="/employees/list"
-                variant="contained"
-                color="info"
-                fullWidth
-                // component={RouterLink}
-                startIcon={<Iconify icon="solar:link-bold-duotone" />}
-              >
-                Live Link
-              </Button>
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={() => router.push(`/employees/edit/${employeeId}`)}
+                  startIcon={<Iconify icon="solar:pen-bold-duotone" />}
+                  sx={{ width: '100%' }}
+                >
+                  Edit
+                </Button>
 
-              <Button
-                onClick={handleClickActiveChange}
-                // href="/employees/list"
-                variant="contained"
-                color={employee.is_active ? 'error' : 'success'}
-                fullWidth
-                // component={RouterLink}
-                startIcon={<Iconify icon="solar:power-bold-duotone" />}
-              >
-                {employee.is_active ? 'Deactivate' : 'Activate'}
-              </Button>
+                <Button
+                  variant="contained"
+                  color="info"
+                  disabled={!employee.is_active}
+                  onClick={() => router.push(`/vcard/${employeeId}`)}
+                  startIcon={<Iconify icon="solar:link-bold-duotone" />}
+                  sx={{ width: '100%' }}
+                >
+                  Live Link
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color={employee.is_active ? 'error' : 'success'}
+                  onClick={handleClickActiveChange}
+                  startIcon={<Iconify icon="solar:power-bold-duotone" />}
+                  sx={{ width: '100%' }}
+                >
+                  {employee.is_active ? 'Deactivate' : 'Activate'}
+                </Button>
+              </Stack>
             </Stack>
           </Card>
         </Grid>

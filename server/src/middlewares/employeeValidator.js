@@ -17,8 +17,8 @@ const employeeDataValidation = {
     check("employeeId")
       .notEmpty()
       .withMessage("Employee ID cannot be empty")
-      .isInt()
-      .withMessage("Employee ID must be an integer"),
+      .isLength({ max: 10 })
+      .withMessage("Employee ID exceeds maximum length"),
     // check("employeePhoto")
     //     .notEmpty().withMessage("Employee Photo is required")
     //     .custom((value, { req }) => {
@@ -63,12 +63,12 @@ const employeeDataValidation = {
       .withMessage("Employee Email is required")
       .isEmail()
       .withMessage("Invalid email address"),
-      check("companyId")
+    check("companyId")
       .exists()
       .withMessage("Company Id is required")
       .notEmpty()
       .withMessage("Company Id cannot be empty"),
-      check("branchId")
+    check("branchId")
       .exists()
       .withMessage("Branch Id is required")
       .notEmpty()
@@ -95,8 +95,8 @@ const employeeDataValidation = {
     check("employeeId")
       .notEmpty()
       .withMessage("Employee ID cannot be empty")
-      .isInt()
-      .withMessage("Employee ID must be an integer"),
+      .isLength({ max: 10 })
+      .withMessage("Employee ID exceeds maximum length"),
     // check("employeePhoto")
     //     .notEmpty().withMessage("Employee Photo is required")
     //     .custom((value, { req }) => {
@@ -118,13 +118,13 @@ const employeeDataValidation = {
       .withMessage("Employee Name cannot be empty")
       .isLength({ max: 455 })
       .withMessage("Employee Name exceeds maximum length"),
-      check("designation")
+    check("designation")
       // .notEmpty()
       // .withMessage("Employee Designation cannot be empty")
       .optional()
       .isLength({ max: 455 })
       .withMessage("Employee Designation exceeds maximum length"),
-      check("mobileNumber")
+    check("mobileNumber")
       // .notEmpty()
       // .withMessage("Mobile Number is required")
       .optional()
@@ -141,12 +141,12 @@ const employeeDataValidation = {
       .withMessage("Employee Email is required")
       .isEmail()
       .withMessage("Invalid email address"),
-      check("companyId")
+    check("companyId")
       .exists()
       .withMessage("Company Id is required")
       .notEmpty()
       .withMessage("Company Id cannot be empty"),
-      check("branchId")
+    check("branchId")
       .exists()
       .withMessage("Branch Id is required")
       .notEmpty()

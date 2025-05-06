@@ -1,7 +1,7 @@
 const userModel = require("../models/users");
 const loginHistoryModel = require("../models/login_history");
 const bcrypt = require("bcrypt");
-const { FRONT_END_URL, APP_KEY, DEFAULT_PASSWORD } = process.env;
+const { FRONT_END_URL, APP_KEY, API_KEY, DEFAULT_PASSWORD } = process.env;
 const sendMail = require("../helpers/sendMail");
 const jwt = require("jsonwebtoken");
 const Response = require("../helpers/response");
@@ -69,6 +69,33 @@ const authController = {
       }
     } catch (error) {
       console.error("Error during logout:", error.message);
+      return Response.responseStatus(res, 500, "Internal server error", {
+        error: error.message,
+      });
+    }
+  },
+  createAPIKeyForUser: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const [user] = await userModel.getUserById(id);
+      // console.log(user);
+      if (user) {
+        const token = jwt.sign({ user_id: user.user_id }, API_KEY);
+        const updatedUser = await userModel.updateUserById(user.id, {
+          api_key: token,
+        });
+        if (updatedUser)
+          return Response.responseStatus(
+            res,
+            201,
+            `API Key created successfully for the user(${user.email})`
+          );
+        return Response.responseStatus(res, 400, "Failed to create API Key");
+      }
+      return Response.responseStatus(res, 404, "User doesn't exist");
+    } catch (error) {
+      console.log(error);
       return Response.responseStatus(res, 500, "Internal server error", {
         error: error.message,
       });
