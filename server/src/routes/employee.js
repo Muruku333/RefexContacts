@@ -9,6 +9,12 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+router.get(
+  "/pdf_data/employees/:employee_id",
+  auth.validateAPI,
+  EmployeeController.getEmployeeByEmployeeIdWithMappedData
+);
+
 router
   .route("/employees/active")
   .get(

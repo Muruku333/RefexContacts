@@ -14,6 +14,7 @@ export const EmployeeViewPage = lazy(() => import('src/pages/employee-view'));
 export const EmployeeEditPage = lazy(() => import('src/pages/employee-edit'));
 export const EmployeeInactiveListPage = lazy(() => import('src/pages/employee-inactive'));
 export const EmployeeVCard = lazy(() => import('src/pages/employee-vcard'));
+export const RefexMobility = lazy(() => import('src/pages/pdf_templates/refex-mobility'));
 export const CompanyListPage = lazy(() => import('src/pages/company-list'));
 export const CompanyCreatePage = lazy(() => import('src/pages/company-create'));
 export const CompanyEditPage = lazy(() => import('src/pages/company-edit'));
@@ -107,6 +108,13 @@ export default function Router() {
           path: 'logout',
           element: <LogoutPage />,
         },
+      ],
+    },
+    {
+      path: 'pdf',
+      children: [
+        { element: <Navigate to="/pdf/refex_mobility" />, index: true },
+        { path: 'refex_mobility/:empId', element: <RefexMobility /> },
       ],
     },
     {

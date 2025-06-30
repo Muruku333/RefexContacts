@@ -42,6 +42,6 @@ router
 
 router
   .route("/generate_vcard_pdf/:employee_id")
-  .get(PrintRequestController.generateVCardPDF);
+  .get(auth.authCheck, PrintRequestController.generateVCardPDF);
 
 module.exports = router;

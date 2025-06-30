@@ -2,6 +2,7 @@ const Response = require("../helpers/response");
 const PDFDocument = require("pdfkit");
 const qs = require("querystring");
 const fs = require("fs");
+const puppeteer = require("puppeteer");
 const path = require("path");
 const QRCode = require("qrcode");
 const PrintRequestModel = require("../models/print_request");
@@ -13,6 +14,363 @@ const UserModel = require("../models/users");
 const Role = require("../utils/userTypes");
 const { mobileIconBase64, emailIconBase64 } = require("../utils/icons");
 const { APP_URL, FRONT_END_URL, LIMIT_DATA, PRINT_ADMIN_MAIL } = process.env;
+
+const generateMobilityPdf = async (
+  res,
+  is_send,
+  employee_id,
+  employee_name
+) => {
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true,
+      timeout: 120000, // Increase timeout to 60 seconds
+    });
+
+    const page = await browser.newPage();
+
+    // Set viewport to a larger size for better quality
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
+      deviceScaleFactor: 2, // Higher DPI for better quality
+    });
+
+    const website_url = `${APP_URL}/pdf/refex_mobility/${employee_id}`;
+
+    // Open URL in current page
+    await page.goto(website_url, { waitUntil: "networkidle0", timeout: 60000 });
+    // await page.screenshot({
+    //   path: ".png",
+    // });
+
+    // Ensure fonts are loaded
+    await page.evaluateHandle("document.fonts.ready");
+
+    //To reflect CSS used for screens instead of print
+    await page.emulateMediaType("screen");
+
+    // Wait for QR code to render
+    await page.waitForSelector("canvas, svg", { timeout: 30000 });
+
+    if (is_send) {
+      try {
+        // Define the path to save the PDF
+        const uploadsDir = path.join(
+          __dirname,
+          "../../uploads/approved_vcards"
+        );
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const fileName = `${employee_name}_${employee_id}_${uniqueSuffix}.pdf`;
+        const filePath = path.join(uploadsDir, fileName);
+
+        // Ensure the uploads directory exists
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        // Generate and save PDF
+        await page.pdf({
+          path: filePath,
+          format: "A4",
+          printBackground: true,
+          width: "1920px",
+          height: "1080px",
+        });
+
+        // Read the saved PDF file
+        const pdfBuffer = fs.readFileSync(filePath);
+
+        // Set headers and send the PDF
+        res.set({
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${employee_name}_${employee_id}.pdf"`,
+        });
+
+        res.send(pdfBuffer);
+
+        // Optional: Clean up the file after sending (if you don't need to keep it)
+        // fs.unlinkSync(filePath);
+      } catch (error) {
+        console.error("PDF generation error:", error);
+        if (!res.headersSent) {
+          res.status(500).send("PDF generation failed");
+        }
+      }
+    } else {
+      // const pdfPath = path.join(__dirname, "output.pdf");
+      const uploadsDir = path.join(__dirname, "../../uploads/approved_vcards");
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const fileName = `${employee_name}_${uniqueSuffix}.pdf`;
+      const filePath = path.join(uploadsDir, fileName);
+      // Ensure the uploads directory exists
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir);
+      }
+
+      writeStream = fs.createWriteStream(filePath);
+
+      await page.pdf({
+        path: filePath,
+        format: "A4",
+        printBackground: true,
+        // scale: 1.5,
+        width: "1920px", // Adjust width to match viewport
+        height: "1080px", // Adjust height to match viewport
+      });
+
+      return {
+        filename: fileName,
+        path: filePath,
+      };
+    }
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+};
+
+const generateDefaultPdf = async (
+  res,
+  is_send,
+  employee_id,
+  employee_name,
+  designation,
+  mobile_number,
+  email,
+  company_logo
+) => {
+  const URL = APP_URL || "http://loacalhost:3001";
+  const qrCodeUrl = URL.concat(`/vcard/${employee_id}`);
+  const logo = (await company_logo)
+    ? Buffer.from(company_logo, "binary").toString()
+    : null;
+
+  let adjust = 469;
+
+  if (employee_name.length > 21) {
+    adjust = adjust - 8;
+  }
+  if (designation.length > 35) {
+    adjust = adjust - 4;
+  }
+
+  const doc = new PDFDocument({
+    size: "A4", // Set A4 paper size
+    margin: 0, // No margins
+  });
+
+  doc.registerFont(
+    "Montserrat-SemiBold",
+    path.join(__dirname, "../fonts/Montserrat/static/Montserrat-SemiBold.ttf")
+  );
+  doc.registerFont(
+    "Montserrat-Medium",
+    path.join(__dirname, "../fonts/Montserrat/static/Montserrat-Medium.ttf")
+  );
+
+  let writeStream;
+  let fileName;
+  let filePath;
+  if (is_send) {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${employee_name}_${employee_id}.pdf"`
+    );
+  } else {
+    // Define the path to save the PDF
+    const uploadsDir = path.join(__dirname, "../../uploads/approved_vcards");
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    fileName = `${employee_name}_${uniqueSuffix}.pdf`;
+    filePath = path.join(uploadsDir, fileName);
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir);
+    }
+    // Create a write stream to the file
+    writeStream = fs.createWriteStream(filePath);
+  }
+
+  // Handle errors during PDF creation
+  doc.on("error", (err) => {
+    console.error("PDF generation error:", err);
+    if (!res.headersSent) {
+      return Response.responseStatus(res, 500, "PDF generation failed", {
+        error: err.message,
+      });
+    }
+  });
+
+  // Pipe the PDF document to the write stream
+  if (is_send) doc.pipe(res);
+  else doc.pipe(writeStream);
+  // Centered rectangle dimensions
+  const rectWidth = 3.5 * 72.5; // 253.75 points
+  const rectHeight = 2 * 73; // 146 points
+
+  // A4 page dimensions in points
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+
+  // Calculating top-left corner to center the rectangle
+  const rectX = (pageWidth - rectWidth) / 2; // 170.765 points
+  const rectY = (pageHeight - rectHeight) / 2; // 347.945 points
+
+  // Draw the rectangle centered on the page
+  doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
+
+  // Centered image dimensions
+  const imageWidth = 1.5 * 72; // 108 points
+  const imageHeight = 1 * 72; // 72 points
+
+  // Calculating top-left corner to center the image inside the rectangle
+  const imageX = rectX + (rectWidth - imageWidth) / 2; // 243.64 points
+  const imageY = rectY + (rectHeight - imageHeight) / 2; // 384.945 points
+
+  // Draw the image centered inside the rectangle
+  doc.image(logo, imageX, imageY - 3, {
+    fit: [imageWidth, imageHeight], // Constrain image size
+    align: "center", // Center horizontally
+    valign: "center", // Center vertically
+  });
+  // End of Front Side of the card -------------------------------------------
+
+  doc.addPage();
+  // Start of Back Side of the card -----------------------------------------
+  // Draw the rectangle centered on the page
+  doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
+
+  // Define padding
+  const padding = 15;
+
+  // Measure the height of the text block for the first part (name and designation)
+  doc.fontSize(12).font("Montserrat-SemiBold");
+  const nameHeight = doc.heightOfString(employee_name, {
+    width: rectWidth / 1.5 - padding,
+  });
+  doc.fontSize(8).font("Montserrat-Medium");
+  const designationHeight = doc.heightOfString(designation, {
+    width: rectWidth / 1.5 - padding,
+  });
+  const firstPartHeight =
+    nameHeight + designationHeight + doc.currentLineHeight() / 2; // Including line gap
+
+  // Measure the height of the text block for the second part (mobile number and email)
+  doc.fontSize(8).font("Montserrat-Medium");
+  const mobileHeight = doc.heightOfString(
+    `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
+    { width: rectWidth / 1.5 - padding }
+  );
+  const emailHeight = doc.heightOfString(email, {
+    width: rectWidth / 1.5 - padding,
+  });
+  const secondPartHeight =
+    mobileHeight + emailHeight + doc.currentLineHeight() / 2; // Including line gap
+
+  // Total height of the text blocks including gap
+  const gap = 10; // Gap between the two parts
+  const totalTextHeight = firstPartHeight + secondPartHeight + gap;
+
+  // Position the text inside the rectangle with padding and center vertically
+  const textWidth = rectWidth / 1.5 - padding; // Allocate half the rectangle width minus padding
+  const textX = rectX + padding;
+  const textY = rectY + (rectHeight - totalTextHeight) / 2 + 2; // Center vertically
+
+  // Define the gradient colors
+  const gradientColors = ["#345C9B", "#70BB23", "#F1460C"];
+  // Create a linear gradient fill
+  const gradientFill = doc.linearGradient(
+    textX,
+    textY,
+    textX + employee_name.length * 7,
+    textY
+  );
+  gradientFill.stop(0, gradientColors[0]);
+  gradientFill.stop(0.4, gradientColors[1]);
+  gradientFill.stop(1, gradientColors[2]);
+
+  // Set the gradient fill for the text
+  doc.fill(gradientFill);
+
+  // Add your gradient-filled text
+  doc
+    .font("Montserrat-SemiBold")
+    .fontSize(12)
+    .text(employee_name, textX, textY - 4, {
+      width: textWidth,
+      align: "left",
+    })
+    .font("Montserrat-Medium", 8)
+    .fillColor("black")
+    .text(designation, {
+      width: textWidth,
+      align: "left",
+    });
+
+  // Add the gap between the two parts
+  const secondPartY = textY + firstPartHeight + gap;
+
+  // Size for icons (assuming line height of 9 points font size)
+  const iconSize = 9; // Adjust this if needed
+  const iconMargin = 5; // Margin between icon and text
+
+  // Add the second part of the text (mobile number and email) with icons
+  doc.image(mobileIconBase64, textX, secondPartY + 0.4, {
+    width: iconSize,
+    height: iconSize,
+  });
+  doc
+    .font("Montserrat-Medium", 8)
+    .text(
+      `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
+      textX + iconSize + iconMargin,
+      secondPartY,
+      {
+        width: textWidth - iconSize - iconMargin,
+        // lineGap: 3,
+        align: "left",
+      }
+    );
+
+  const emailY = secondPartY + mobileHeight + doc.currentLineHeight() / 2;
+  doc.image(emailIconBase64, textX, emailY + 0.5, {
+    width: iconSize + 1,
+    height: iconSize + 1,
+  });
+  doc
+    .font("Montserrat-Medium", 8)
+    .text(email, textX + iconSize + iconMargin, emailY, {
+      width: textWidth - iconSize - iconMargin,
+      align: "left",
+    });
+
+  // Draw the QR code on the right side of the rectangle
+  const qrCodePath = await QRCode.toDataURL(qrCodeUrl, {
+    errorCorrectionLevel: "L",
+    margin: 0,
+  }); // Path to your QR code image
+  const qrCodeSize = 63; // Size of the QR code (1 inch)
+  const qrX = rectX + rectWidth - qrCodeSize - padding; // 10 points padding from the right edge of the rectangle
+  const qrY = rectY + (rectHeight - qrCodeSize) / 2; // Center vertically within the rectangle
+
+  doc.image(qrCodePath, qrX, qrY, {
+    fit: [qrCodeSize, qrCodeSize],
+  });
+
+  doc.end();
+  //   return Response.responseStatus(res, 200, "Employee Data", rows[0]);
+  return {
+    filename: fileName,
+    path: filePath,
+  };
+};
 
 const PrintRequestController = {
   createPrintRequest: async (req, res) => {
@@ -365,238 +723,35 @@ const PrintRequestController = {
                 company_name,
                 company_website,
                 company_logo,
+                default_template,
                 branch_name,
                 branch_address,
                 google_map_link,
               } = ep_rows[0];
-              const URL = APP_URL || "http://loacalhost:3001";
-              const qrCodeUrl = URL.concat(`/vcard/${employee_id}`);
-              const logo = (await company_logo)
-                ? Buffer.from(company_logo, "binary").toString()
-                : null;
 
-              let adjust = 469;
-
-              if (employee_name.length > 21) {
-                adjust = adjust - 8;
-              }
-              if (designation.length > 35) {
-                adjust = adjust - 4;
-              }
-
-              const doc = new PDFDocument({
-                size: "A4", // Set A4 paper size
-                margin: 0, // No margins
-              });
-
-              doc.registerFont(
-                "Montserrat-SemiBold",
-                path.join(
-                  __dirname,
-                  "../fonts/Montserrat/static/Montserrat-SemiBold.ttf"
-                )
-              );
-              doc.registerFont(
-                "Montserrat-Medium",
-                path.join(
-                  __dirname,
-                  "../fonts/Montserrat/static/Montserrat-Medium.ttf"
-                )
-              );
-
-              // Define the path to save the PDF
-              const uploadsDir = path.join(
-                __dirname,
-                "../../uploads/approved_vcards"
-              );
-              const uniqueSuffix =
-                Date.now() + "-" + Math.round(Math.random() * 1e9);
-              const fileName = `${employee_name}_${uniqueSuffix}.pdf`;
-              const filePath = path.join(uploadsDir, fileName);
-              attachments.push({
-                filename: fileName,
-                path: filePath,
-              });
-              // Ensure the uploads directory exists
-              if (!fs.existsSync(uploadsDir)) {
-                fs.mkdirSync(uploadsDir);
-              }
-              // Create a write stream to the file
-              const writeStream = fs.createWriteStream(filePath);
-
-              // Handle errors during PDF creation
-              doc.on("error", (err) => {
-                console.error("PDF generation error:", err);
-                if (!res.headersSent) {
-                  return Response.responseStatus(
+              if (default_template) {
+                attachments.push(
+                  await generateDefaultPdf(
                     res,
-                    500,
-                    "PDF generation failed",
-                    {
-                      error: err.message,
-                    }
-                  );
-                }
-              });
-
-              // Pipe the PDF document to the write stream
-              doc.pipe(writeStream);
-              // Centered rectangle dimensions
-              const rectWidth = 3.5 * 72.5; // 253.75 points
-              const rectHeight = 2 * 73; // 146 points
-
-              // A4 page dimensions in points
-              const pageWidth = 595.28;
-              const pageHeight = 841.89;
-
-              // Calculating top-left corner to center the rectangle
-              const rectX = (pageWidth - rectWidth) / 2; // 170.765 points
-              const rectY = (pageHeight - rectHeight) / 2; // 347.945 points
-
-              // Draw the rectangle centered on the page
-              doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-              // Centered image dimensions
-              const imageWidth = 1.5 * 72; // 108 points
-              const imageHeight = 1 * 72; // 72 points
-
-              // Calculating top-left corner to center the image inside the rectangle
-              const imageX = rectX + (rectWidth - imageWidth) / 2; // 243.64 points
-              const imageY = rectY + (rectHeight - imageHeight) / 2; // 384.945 points
-
-              // Draw the image centered inside the rectangle
-              doc.image(logo, imageX, imageY - 3, {
-                fit: [imageWidth, imageHeight], // Constrain image size
-                align: "center", // Center horizontally
-                valign: "center", // Center vertically
-              });
-              // End of Front Side of the card -------------------------------------------
-
-              doc.addPage();
-              // Start of Back Side of the card -----------------------------------------
-              // Draw the rectangle centered on the page
-              doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-              // Define padding
-              const padding = 15;
-
-              // Measure the height of the text block for the first part (name and designation)
-              doc.fontSize(12).font("Montserrat-SemiBold");
-              const nameHeight = doc.heightOfString(employee_name, {
-                width: rectWidth / 1.5 - padding,
-              });
-              doc.fontSize(8).font("Montserrat-Medium");
-              const designationHeight = doc.heightOfString(designation, {
-                width: rectWidth / 1.5 - padding,
-              });
-              const firstPartHeight =
-                nameHeight + designationHeight + doc.currentLineHeight() / 2; // Including line gap
-
-              // Measure the height of the text block for the second part (mobile number and email)
-              doc.fontSize(8).font("Montserrat-Medium");
-              const mobileHeight = doc.heightOfString(
-                `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-                { width: rectWidth / 1.5 - padding }
-              );
-              const emailHeight = doc.heightOfString(email, {
-                width: rectWidth / 1.5 - padding,
-              });
-              const secondPartHeight =
-                mobileHeight + emailHeight + doc.currentLineHeight() / 2; // Including line gap
-
-              // Total height of the text blocks including gap
-              const gap = 10; // Gap between the two parts
-              const totalTextHeight = firstPartHeight + secondPartHeight + gap;
-
-              // Position the text inside the rectangle with padding and center vertically
-              const textWidth = rectWidth / 1.5 - padding; // Allocate half the rectangle width minus padding
-              const textX = rectX + padding;
-              const textY = rectY + (rectHeight - totalTextHeight) / 2 + 2; // Center vertically
-
-              // Define the gradient colors
-              const gradientColors = ["#345C9B", "#70BB23", "#F1460C"];
-              // Create a linear gradient fill
-              const gradientFill = doc.linearGradient(
-                textX,
-                textY,
-                textX + employee_name.length * 7,
-                textY
-              );
-              gradientFill.stop(0, gradientColors[0]);
-              gradientFill.stop(0.4, gradientColors[1]);
-              gradientFill.stop(1, gradientColors[2]);
-
-              // Set the gradient fill for the text
-              doc.fill(gradientFill);
-
-              // Add your gradient-filled text
-              doc
-                .font("Montserrat-SemiBold")
-                .fontSize(12)
-                .text(employee_name, textX, textY - 4, {
-                  width: textWidth,
-                  align: "left",
-                })
-                .font("Montserrat-Medium", 8)
-                .fillColor("black")
-                .text(designation, {
-                  width: textWidth,
-                  align: "left",
-                });
-
-              // Add the gap between the two parts
-              const secondPartY = textY + firstPartHeight + gap;
-
-              // Size for icons (assuming line height of 9 points font size)
-              const iconSize = 9; // Adjust this if needed
-              const iconMargin = 5; // Margin between icon and text
-
-              // Add the second part of the text (mobile number and email) with icons
-              doc.image(mobileIconBase64, textX, secondPartY + 0.4, {
-                width: iconSize,
-                height: iconSize,
-              });
-              doc
-                .font("Montserrat-Medium", 8)
-                .text(
-                  `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-                  textX + iconSize + iconMargin,
-                  secondPartY,
-                  {
-                    width: textWidth - iconSize - iconMargin,
-                    // lineGap: 3,
-                    align: "left",
-                  }
+                    false,
+                    employee_id,
+                    employee_name,
+                    designation,
+                    mobile_number,
+                    email,
+                    company_logo
+                  )
                 );
-
-              const emailY =
-                secondPartY + mobileHeight + doc.currentLineHeight() / 2;
-              doc.image(emailIconBase64, textX, emailY + 0.5, {
-                width: iconSize + 1,
-                height: iconSize + 1,
-              });
-              doc
-                .font("Montserrat-Medium", 8)
-                .text(email, textX + iconSize + iconMargin, emailY, {
-                  width: textWidth - iconSize - iconMargin,
-                  align: "left",
-                });
-
-              // Draw the QR code on the right side of the rectangle
-              const qrCodePath = await QRCode.toDataURL(qrCodeUrl, {
-                errorCorrectionLevel: "L",
-                margin: 0,
-              }); // Path to your QR code image
-              const qrCodeSize = 63; // Size of the QR code (1 inch)
-              const qrX = rectX + rectWidth - qrCodeSize - padding; // 10 points padding from the right edge of the rectangle
-              const qrY = rectY + (rectHeight - qrCodeSize) / 2; // Center vertically within the rectangle
-
-              doc.image(qrCodePath, qrX, qrY, {
-                fit: [qrCodeSize, qrCodeSize],
-              });
-
-              doc.end();
-              //   return Response.responseStatus(res, 200, "Employee Data", rows[0]);
+              } else {
+                attachments.push(
+                  await generateMobilityPdf(
+                    res,
+                    false,
+                    employee_id,
+                    employee_name
+                  )
+                );
+              }
             }
           }
 
@@ -756,7 +911,7 @@ const PrintRequestController = {
       const { user_id } = req.userData;
       const { request_id, pe_ids = [], status } = req.body;
       const link = `${FRONT_END_URL}`;
-      const attachments = [];
+      let attachments = [];
       const emp_rows = [];
       let approvedCount = 0;
       let pendingCount = 0;
@@ -840,238 +995,35 @@ const PrintRequestController = {
               company_name,
               company_website,
               company_logo,
+              default_template,
               branch_name,
               branch_address,
               google_map_link,
             } = ep_rows[0];
-            const URL = APP_URL || "http://loacalhost:3001";
-            const qrCodeUrl = URL.concat(`/vcard/${employee_id}`);
-            const logo = (await company_logo)
-              ? Buffer.from(company_logo, "binary").toString()
-              : null;
 
-            let adjust = 469;
-
-            if (employee_name.length > 21) {
-              adjust = adjust - 8;
-            }
-            if (designation.length > 35) {
-              adjust = adjust - 4;
-            }
-
-            const doc = new PDFDocument({
-              size: "A4", // Set A4 paper size
-              margin: 0, // No margins
-            });
-
-            doc.registerFont(
-              "Montserrat-SemiBold",
-              path.join(
-                __dirname,
-                "../fonts/Montserrat/static/Montserrat-SemiBold.ttf"
-              )
-            );
-            doc.registerFont(
-              "Montserrat-Medium",
-              path.join(
-                __dirname,
-                "../fonts/Montserrat/static/Montserrat-Medium.ttf"
-              )
-            );
-
-            // Define the path to save the PDF
-            const uploadsDir = path.join(
-              __dirname,
-              "../../uploads/approved_vcards"
-            );
-            const uniqueSuffix =
-              Date.now() + "-" + Math.round(Math.random() * 1e9);
-            const fileName = `${employee_name}_${uniqueSuffix}.pdf`;
-            const filePath = path.join(uploadsDir, fileName);
-            attachments.push({
-              filename: fileName,
-              path: filePath,
-            });
-            // Ensure the uploads directory exists
-            if (!fs.existsSync(uploadsDir)) {
-              fs.mkdirSync(uploadsDir);
-            }
-            // Create a write stream to the file
-            const writeStream = fs.createWriteStream(filePath);
-
-            // Handle errors during PDF creation
-            doc.on("error", (err) => {
-              console.error("PDF generation error:", err);
-              if (!res.headersSent) {
-                return Response.responseStatus(
+            if (default_template) {
+              attachments.push(
+                await generateDefaultPdf(
                   res,
-                  500,
-                  "PDF generation failed",
-                  {
-                    error: err.message,
-                  }
-                );
-              }
-            });
-            // Pipe the PDF document to the write stream
-            doc.pipe(writeStream);
-
-            // Centered rectangle dimensions
-            const rectWidth = 3.5 * 72.5; // 253.75 points
-            const rectHeight = 2 * 73; // 146 points
-
-            // A4 page dimensions in points
-            const pageWidth = 595.28;
-            const pageHeight = 841.89;
-
-            // Calculating top-left corner to center the rectangle
-            const rectX = (pageWidth - rectWidth) / 2; // 170.765 points
-            const rectY = (pageHeight - rectHeight) / 2; // 347.945 points
-
-            // Draw the rectangle centered on the page
-            doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-            // Centered image dimensions
-            const imageWidth = 1.5 * 72; // 108 points
-            const imageHeight = 1 * 72; // 72 points
-
-            // Calculating top-left corner to center the image inside the rectangle
-            const imageX = rectX + (rectWidth - imageWidth) / 2; // 243.64 points
-            const imageY = rectY + (rectHeight - imageHeight) / 2; // 384.945 points
-
-            // Draw the image centered inside the rectangle
-            doc.image(logo, imageX, imageY - 3, {
-              fit: [imageWidth, imageHeight], // Constrain image size
-              align: "center", // Center horizontally
-              valign: "center", // Center vertically
-            });
-            // End of Front Side of the card -------------------------------------------
-
-            doc.addPage();
-            // Start of Back Side of the card -----------------------------------------
-            // Draw the rectangle centered on the page
-            doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-            // Define padding
-            const padding = 15;
-
-            // Measure the height of the text block for the first part (name and designation)
-            doc.fontSize(12).font("Montserrat-SemiBold");
-            const nameHeight = doc.heightOfString(employee_name, {
-              width: rectWidth / 1.5 - padding,
-            });
-            doc.fontSize(8).font("Montserrat-Medium");
-            const designationHeight = doc.heightOfString(designation, {
-              width: rectWidth / 1.5 - padding,
-            });
-            const firstPartHeight =
-              nameHeight + designationHeight + doc.currentLineHeight() / 2; // Including line gap
-
-            // Measure the height of the text block for the second part (mobile number and email)
-            doc.fontSize(8).font("Montserrat-Medium");
-            const mobileHeight = doc.heightOfString(
-              `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-              { width: rectWidth / 1.5 - padding }
-            );
-            const emailHeight = doc.heightOfString(email, {
-              width: rectWidth / 1.5 - padding,
-            });
-            const secondPartHeight =
-              mobileHeight + emailHeight + doc.currentLineHeight() / 2; // Including line gap
-
-            // Total height of the text blocks including gap
-            const gap = 10; // Gap between the two parts
-            const totalTextHeight = firstPartHeight + secondPartHeight + gap;
-
-            // Position the text inside the rectangle with padding and center vertically
-            const textWidth = rectWidth / 1.5 - padding; // Allocate half the rectangle width minus padding
-            const textX = rectX + padding;
-            const textY = rectY + (rectHeight - totalTextHeight) / 2 + 2; // Center vertically
-
-            // Define the gradient colors
-            const gradientColors = ["#345C9B", "#70BB23", "#F1460C"];
-            // Create a linear gradient fill
-            const gradientFill = doc.linearGradient(
-              textX,
-              textY,
-              textX + employee_name.length * 7,
-              textY
-            );
-            gradientFill.stop(0, gradientColors[0]);
-            gradientFill.stop(0.4, gradientColors[1]);
-            gradientFill.stop(1, gradientColors[2]);
-
-            // Set the gradient fill for the text
-            doc.fill(gradientFill);
-
-            // Add your gradient-filled text
-            doc
-              .font("Montserrat-SemiBold")
-              .fontSize(12)
-              .text(employee_name, textX, textY - 4, {
-                width: textWidth,
-                align: "left",
-              })
-              .font("Montserrat-Medium", 8)
-              .fillColor("black")
-              .text(designation, {
-                width: textWidth,
-                align: "left",
-              });
-
-            // Add the gap between the two parts
-            const secondPartY = textY + firstPartHeight + gap;
-
-            // Size for icons (assuming line height of 9 points font size)
-            const iconSize = 9; // Adjust this if needed
-            const iconMargin = 5; // Margin between icon and text
-
-            // Add the second part of the text (mobile number and email) with icons
-            doc.image(mobileIconBase64, textX, secondPartY + 0.4, {
-              width: iconSize,
-              height: iconSize,
-            });
-            doc
-              .font("Montserrat-Medium", 8)
-              .text(
-                `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-                textX + iconSize + iconMargin,
-                secondPartY,
-                {
-                  width: textWidth - iconSize - iconMargin,
-                  // lineGap: 3,
-                  align: "left",
-                }
+                  false,
+                  employee_id,
+                  employee_name,
+                  designation,
+                  mobile_number,
+                  email,
+                  company_logo
+                )
               );
-
-            const emailY =
-              secondPartY + mobileHeight + doc.currentLineHeight() / 2;
-            doc.image(emailIconBase64, textX, emailY + 0.5, {
-              width: iconSize + 1,
-              height: iconSize + 1,
-            });
-            doc
-              .font("Montserrat-Medium", 8)
-              .text(email, textX + iconSize + iconMargin, emailY, {
-                width: textWidth - iconSize - iconMargin,
-                align: "left",
-              });
-
-            // Draw the QR code on the right side of the rectangle
-            const qrCodePath = await QRCode.toDataURL(qrCodeUrl, {
-              errorCorrectionLevel: "L",
-              margin: 0,
-            }); // Path to your QR code image
-            const qrCodeSize = 63; // Size of the QR code (1 inch)
-            const qrX = rectX + rectWidth - qrCodeSize - padding; // 10 points padding from the right edge of the rectangle
-            const qrY = rectY + (rectHeight - qrCodeSize) / 2; // Center vertically within the rectangle
-
-            doc.image(qrCodePath, qrX, qrY, {
-              fit: [qrCodeSize, qrCodeSize],
-            });
-
-            doc.end();
-            //   return Response.responseStatus(res, 200, "Employee Data", rows[0]);
+            } else {
+              attachments.push(
+                await generateMobilityPdf(
+                  res,
+                  false,
+                  employee_id,
+                  employee_name
+                )
+              );
+            }
           }
         }
 
@@ -1245,216 +1197,24 @@ const PrintRequestController = {
           company_name,
           company_website,
           company_logo,
+          default_template,
           branch_name,
           branch_address,
           google_map_link,
         } = rows[0];
-        const URL = APP_URL || "http://localhost:3001";
-        const qrCodeUrl = URL.concat(`/vcard/${employee_id}`);
-        const logo = (await company_logo)
-          ? Buffer.from(company_logo, "binary").toString()
-          : null;
 
-        let adjust = 469;
-
-        if (employee_name.length > 21) {
-          adjust = adjust - 8;
-        }
-        if (designation.length > 35) {
-          adjust = adjust - 4;
-        }
-
-        const doc = new PDFDocument({
-          size: "A4", // Set A4 paper size
-          margin: 0, // No margins
-        });
-
-        doc.registerFont(
-          "Montserrat-SemiBold",
-          path.join(
-            __dirname,
-            "../fonts/Montserrat/static/Montserrat-SemiBold.ttf"
-          )
-        );
-        doc.registerFont(
-          "Montserrat-Medium",
-          path.join(
-            __dirname,
-            "../fonts/Montserrat/static/Montserrat-Medium.ttf"
-          )
-        );
-
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader(
-          "Content-Disposition",
-          `inline; filename="${employee_name}_${employee_id}.pdf"`
-        );
-
-        // Handle errors during PDF creation
-        doc.on("error", (err) => {
-          console.error("PDF generation error:", err);
-          if (!res.headersSent) {
-            return Response.responseStatus(res, 500, "PDF generation failed", {
-              error: err.message,
-            });
-          }
-        });
-
-        doc.pipe(res);
-        // Centered rectangle dimensions
-        const rectWidth = 3.5 * 72.5; // 253.75 points
-        const rectHeight = 2 * 73; // 146 points
-
-        // A4 page dimensions in points
-        const pageWidth = 595.28;
-        const pageHeight = 841.89;
-
-        // Calculating top-left corner to center the rectangle
-        const rectX = (pageWidth - rectWidth) / 2; // 170.765 points
-        const rectY = (pageHeight - rectHeight) / 2; // 347.945 points
-
-        // Draw the rectangle centered on the page
-        doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-        // Centered image dimensions
-        const imageWidth = 1.5 * 72; // 108 points
-        const imageHeight = 1 * 72; // 72 points
-
-        // Calculating top-left corner to center the image inside the rectangle
-        const imageX = rectX + (rectWidth - imageWidth) / 2; // 243.64 points
-        const imageY = rectY + (rectHeight - imageHeight) / 2; // 384.945 points
-
-        // Draw the image centered inside the rectangle
-        doc.image(logo, imageX, imageY - 3, {
-          fit: [imageWidth, imageHeight], // Constrain image size
-          align: "center", // Center horizontally
-          valign: "center", // Center vertically
-        });
-        // End of Front Side of the card -------------------------------------------
-
-        doc.addPage();
-        // Start of Back Side of the card -----------------------------------------
-        // Draw the rectangle centered on the page
-        doc.rect(rectX, rectY, rectWidth, rectHeight).stroke();
-
-        const padding = 15;
-
-        // Measure the height of the text block for the first part (name and designation)
-        doc.fontSize(12).font("Montserrat-SemiBold");
-        const nameHeight = doc.heightOfString(employee_name, {
-          width: rectWidth / 1.5 - padding,
-        });
-        doc.fontSize(8).font("Montserrat-Medium");
-        const designationHeight = doc.heightOfString(designation, {
-          width: rectWidth / 1.5 - padding,
-        });
-        const firstPartHeight =
-          nameHeight + designationHeight + doc.currentLineHeight() / 2; // Including line gap
-        // console.log(doc.currentLineHeight());
-        // Measure the height of the text block for the second part (mobile number and email)
-        doc.fontSize(8).font("Montserrat-Medium");
-        const mobileHeight = doc.heightOfString(
-          `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-          { width: rectWidth / 1.5 - padding }
-        );
-        const emailHeight = doc.heightOfString(email, {
-          width: rectWidth / 1.5 - padding,
-        });
-        const secondPartHeight =
-          mobileHeight + emailHeight + doc.currentLineHeight() / 2; // Including line gap
-
-        // Total height of the text blocks including gap
-        const gap = 10; // Gap between the two parts
-        const totalTextHeight = firstPartHeight + secondPartHeight + gap;
-
-        // Position the text inside the rectangle with padding and center vertically
-        const textWidth = rectWidth / 1.5 - padding; // Allocate half the rectangle width minus padding
-        const textX = rectX + padding;
-        const textY = rectY + (rectHeight - totalTextHeight) / 2 + 2; // Center vertically
-
-        // Define the gradient colors
-        const gradientColors = ["#345C9B", "#70BB23", "#F1460C"];
-        // Create a linear gradient fill
-        const gradientFill = doc.linearGradient(
-          textX,
-          textY,
-          textX + employee_name.length * 7,
-          textY
-        );
-        gradientFill.stop(0, gradientColors[0]);
-        gradientFill.stop(0.4, gradientColors[1]);
-        gradientFill.stop(1, gradientColors[2]);
-
-        // Set the gradient fill for the text
-        doc.fill(gradientFill);
-
-        // Add your gradient-filled text
-        doc
-          .font("Montserrat-SemiBold")
-          .fontSize(12)
-          .text(employee_name, textX, textY - 4, {
-            width: textWidth,
-            align: "left",
-          })
-          .font("Montserrat-Medium", 8)
-          .fillColor("black")
-          .text(designation, {
-            width: textWidth,
-            align: "left",
-          });
-
-        // Add the gap between the two parts
-        const secondPartY = textY + firstPartHeight + gap;
-
-        // Size for icons (assuming line height of 9 points font size)
-        const iconSize = 9; // Adjust this if needed
-        const iconMargin = 5; // Margin between icon and text
-
-        // Add the second part of the text (mobile number and email) with icons
-        doc.image(mobileIconBase64, textX, secondPartY + 0.4, {
-          width: iconSize,
-          height: iconSize,
-        });
-        doc
-          .font("Montserrat-Medium", 8)
-          .text(
-            `+91 ${mobile_number.slice(0, 5)} ${mobile_number.slice(5)}`,
-            textX + iconSize + iconMargin,
-            secondPartY,
-            {
-              width: textWidth - iconSize - iconMargin,
-              // lineGap: 3,
-              align: "left",
-            }
+        if (default_template)
+          await generateDefaultPdf(
+            res,
+            true,
+            employee_id,
+            employee_name,
+            designation,
+            mobile_number,
+            email,
+            company_logo
           );
-
-        const emailY = secondPartY + mobileHeight + doc.currentLineHeight() / 2;
-        doc.image(emailIconBase64, textX, emailY + 0.5, {
-          width: iconSize + 1,
-          height: iconSize + 1,
-        });
-        doc
-          .font("Montserrat-Medium", 8)
-          .text(email, textX + iconSize + iconMargin, emailY, {
-            width: textWidth - iconSize - iconMargin,
-            align: "left",
-          });
-
-        // Draw the QR code on the right side of the rectangle
-        const qrCodePath = await QRCode.toDataURL(qrCodeUrl, {
-          errorCorrectionLevel: "L",
-          margin: 0,
-        }); // Path to your QR code image
-        const qrCodeSize = 63; // Size of the QR code (1 inch)
-        const qrX = rectX + rectWidth - qrCodeSize - padding; // 10 points padding from the right edge of the rectangle
-        const qrY = rectY + (rectHeight - qrCodeSize) / 2; // Center vertically within the rectangle
-
-        doc.image(qrCodePath, qrX, qrY, {
-          fit: [qrCodeSize, qrCodeSize],
-        });
-
-        doc.end();
-        //   return Response.responseStatus(res, 200, "Employee Data", rows[0]);
+        else await generateMobilityPdf(res, true, employee_id, employee_name);
       } else {
         // return Response.responseStatus(res, 400, "No data found");
         // Only send error response if headers haven't already been sent
