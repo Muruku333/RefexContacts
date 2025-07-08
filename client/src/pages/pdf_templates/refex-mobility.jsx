@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import { Box, Stack } from '@mui/material';
 
 import Iconify from 'src/components/iconify';
+import { Web, Email, Whatsapp } from 'src/components/icons';
 
 const authToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUkctMDAwMSIsImlhdCI6MTc0NjE2NzUzNX0.foDHmYHn54PZsdkIwI2HwsnvKZLpT1mNPkNK8Drbc1A';
@@ -50,20 +51,6 @@ export default function RefexMobility() {
       {employee ? (
         <>
           {/* First Page  */}
-          {/* <Box
-            sx={{
-              width: '210mm',
-              height: '297mm',
-              px: '10mm',
-              pt: '10mm',
-              boxSizing: 'border-box',
-              pageBreakAfter: 'always',
-              // border: '1px dotted',
-              backgroundColor: '#ffffff',
-            }}
-          >
-            Hello
-          </Box> */}
           <Box
             sx={{
               width: '210mm',
@@ -74,6 +61,7 @@ export default function RefexMobility() {
               pageBreakAfter: 'always',
               backgroundColor: '#ffffff',
               position: 'relative',
+              fontFamily: 'Poppins',
             }}
           >
             {/* Centered rectangle with background image */}
@@ -141,7 +129,6 @@ export default function RefexMobility() {
               </Box> */}
             </Box>
           </Box>
-          {/* Second Page  */}
           {/* Second Page */}
           <Box
             sx={{
@@ -153,6 +140,7 @@ export default function RefexMobility() {
               pageBreakAfter: 'always',
               backgroundColor: '#ffffff',
               position: 'relative',
+              fontFamily: 'Poppins',
             }}
           >
             {/* Centered rectangle without background image */}
@@ -184,18 +172,20 @@ export default function RefexMobility() {
                 <Box sx={{ width: '80%', p: 1 }}>
                   <Box
                     sx={{
-                      fontSize: '12px',
-                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      fontWeight: 600,
                       color: '#F4553B',
+                      // lineHeight: '1pt',
                     }}
                   >
                     {employee.employee_name}
                   </Box>
                   <Box
                     sx={{
-                      fontSize: '8px',
+                      fontSize: '6px',
                       color: '#F4553B',
-                      marginTop: '2px',
+                      fontWeight: 'normal',
+                      // marginTop: '2px',
                     }}
                   >
                     {employee.designation}
@@ -242,6 +232,9 @@ export default function RefexMobility() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
+                    fontSize: '8px',
+                    fontWeight: 500,
+                    color: '#F4553B',
                   }}
                 >
                   <Box
@@ -261,13 +254,13 @@ export default function RefexMobility() {
                         mr: '4px',
                       }}
                     >
-                      <Iconify width={10} icon="ic:round-email" sx={{ color: 'white' }} />
+                      <Email sx={{ width: 10, height: 10 }} />
                     </Box>
                     <Box
                       sx={{
-                        fontSize: '7px',
-                        fontWeight: 'bold',
-                        color: '#F4553B',
+                        // fontSize: '7px',
+                        // fontWeight: 'bold',
+                        // color: '#F4553B',
                         // textAlign: 'center',
                         flexGrow: 1,
                       }}
@@ -293,13 +286,14 @@ export default function RefexMobility() {
                         mr: '4px',
                       }}
                     >
-                      <Iconify width={10} icon="ri:whatsapp-fill" sx={{ color: 'white' }} />
+                      <Whatsapp sx={{ width: 10, height: 10 }} />
+                      {/* <Iconify width={10} icon="ph:whatsapp-logo-thin" sx={{ color: 'white' }} /> */}
                     </Box>
                     <Box
                       sx={{
-                        fontSize: '7px',
-                        fontWeight: 'bold',
-                        color: '#F4553B',
+                        // fontSize: '7px',
+                        // fontWeight: 'bold',
+                        // color: '#F4553B',
                         // textAlign: 'center',
                         flexGrow: 1,
                       }}
@@ -324,17 +318,18 @@ export default function RefexMobility() {
                         mr: '4px',
                       }}
                     >
-                      <Iconify
+                      {/* <Iconify
                         width={10}
                         icon="fluent:globe-search-24-filled"
                         sx={{ color: 'white' }}
-                      />
+                      /> */}
+                      <Web sx={{ width: 10, height: 10 }} />
                     </Box>
                     <Box
                       sx={{
-                        fontSize: '7px',
-                        fontWeight: 'bold',
-                        color: '#F4553B',
+                        // fontSize: '7px',
+                        // fontWeight: 'bold',
+                        // color: '#F4553B',
                         // textAlign: 'center',
                         flexGrow: 1,
                       }}
@@ -347,7 +342,7 @@ export default function RefexMobility() {
                 {/* Vertical divider */}
                 <Box
                   sx={{
-                    width: '1px',
+                    width: 0.0029,
                     backgroundColor: '#F4553B',
                     margin: '8px 0',
                   }}
