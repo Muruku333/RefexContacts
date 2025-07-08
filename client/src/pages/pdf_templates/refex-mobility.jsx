@@ -342,7 +342,7 @@ export default function RefexMobility() {
                 {/* Vertical divider */}
                 <Box
                   sx={{
-                    width: 0.0029,
+                    width: 0.0025,
                     backgroundColor: '#F4553B',
                     margin: '8px 0',
                   }}
