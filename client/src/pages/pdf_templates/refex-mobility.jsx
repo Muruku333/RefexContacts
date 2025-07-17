@@ -67,8 +67,8 @@ export default function RefexMobility() {
             <Box
               sx={{
                 position: 'absolute',
-                width: '253.75px', // or '89.54mm'
-                height: '146px', // or '51.51mm'
+                width: '89.54mm', // or '89.54mm'
+                height: '51.51mm', // or '51.51mm'
                 left: '50%',
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -117,8 +117,8 @@ export default function RefexMobility() {
                   fontWeight: 600,
                   color: '#F4553B',
                   textAlign: 'center',
-                  fontSize: '5px',
-                  marginBottom: '6px',
+                  fontSize: '5pt',
+                  marginBottom: '6pt',
                   // flexGrow: 1,
                 }}
               >
@@ -158,8 +158,8 @@ export default function RefexMobility() {
             <Box
               sx={{
                 position: 'absolute',
-                width: '253.75px', // or '89.54mm'
-                height: '146px', // or '51.51mm'
+                width: '89.54mm', // or '89.54mm'
+                height: '51.51mm', // or '51.51mm'
                 left: '50%',
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -183,7 +183,7 @@ export default function RefexMobility() {
                 <Box sx={{ width: '80%', p: 1 }}>
                   <Box
                     sx={{
-                      fontSize: '13px',
+                      fontSize: '13pt',
                       fontWeight: 600,
                       color: '#F4553B',
                       // lineHeight: '1pt',
@@ -193,7 +193,7 @@ export default function RefexMobility() {
                   </Box>
                   <Box
                     sx={{
-                      fontSize: '6px',
+                      fontSize: '6pt',
                       color: '#F4553B',
                       fontWeight: 'normal',
                       // marginTop: '2px',
@@ -243,7 +243,7 @@ export default function RefexMobility() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    fontSize: '8px',
+                    fontSize: '8pt',
                     fontWeight: 500,
                     color: '#F4553B',
                   }}
@@ -258,14 +258,14 @@ export default function RefexMobility() {
                     <Box
                       sx={{
                         backgroundColor: '#F4553B',
-                        borderRadius: '0 12px 12px 0',
-                        padding: '4px 4px',
+                        borderRadius: '0 12pt 12pt 0',
+                        padding: '4pt 4pt',
                         display: 'flex',
                         alignItems: 'center',
-                        mr: '4px',
+                        mr: '4pt',
                       }}
                     >
-                      <Email sx={{ width: 10, height: 10 }} />
+                      <Email sx={{ width: '10pt', height: '10pt' }} />
                     </Box>
                     <Box
                       sx={{
@@ -290,14 +290,14 @@ export default function RefexMobility() {
                     <Box
                       sx={{
                         backgroundColor: '#F4553B',
-                        borderRadius: '0 12px 12px 0',
-                        padding: '4px 4px',
+                        borderRadius: '0 12pt 12pt 0',
+                        padding: '4pt 4pt',
                         display: 'flex',
                         alignItems: 'center',
-                        mr: '4px',
+                        mr: '4pt',
                       }}
                     >
-                      <Whatsapp sx={{ width: 10, height: 10 }} />
+                      <Whatsapp sx={{ width: '10pt', height: '10pt' }} />
                       {/* <Iconify width={10} icon="ph:whatsapp-logo-thin" sx={{ color: 'white' }} /> */}
                     </Box>
                     <Box
@@ -322,11 +322,11 @@ export default function RefexMobility() {
                     <Box
                       sx={{
                         backgroundColor: '#F4553B',
-                        borderRadius: '0 12px 12px 0',
-                        padding: '4px 4px',
+                        borderRadius: '0 12pt 12pt 0',
+                        padding: '4pt 4pt',
                         display: 'flex',
                         alignItems: 'center',
-                        mr: '4px',
+                        mr: '4pt',
                       }}
                     >
                       {/* <Iconify
@@ -334,7 +334,7 @@ export default function RefexMobility() {
                         icon="fluent:globe-search-24-filled"
                         sx={{ color: 'white' }}
                       /> */}
-                      <Web sx={{ width: 10, height: 10 }} />
+                      <Web sx={{ width: '10pt', height: '10pt' }} />
                     </Box>
                     <Box
                       sx={{
@@ -373,15 +373,15 @@ export default function RefexMobility() {
                   <QRCode
                     value={`https://contacts.dev.refex.group/vcard/${empId}`}
                     ecLevel="Q"
-                    size={70}
+                    size={100}
                     qrStyle="dots"
                     eyeRadius={10}
                     fgColor="#F4553B"
-                    quietZone={3}
+                    quietZone={2}
                   />
                   <Box
                     sx={{
-                      fontSize: '6px',
+                      fontSize: '6pt',
                       color: '#F4553B',
                       marginTop: '1px',
                       textAlign: 'center',
