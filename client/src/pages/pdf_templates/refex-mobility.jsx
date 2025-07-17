@@ -180,7 +180,7 @@ export default function RefexMobility() {
                 }}
               >
                 {/* Left 70% */}
-                <Box sx={{ width: '80%', p: 1 }}>
+                <Box sx={{ width: '80%', p: 1.5 }}>
                   <Box
                     sx={{
                       fontSize: '13pt',
@@ -355,7 +355,7 @@ export default function RefexMobility() {
                   sx={{
                     width: 0.0025,
                     backgroundColor: '#F4553B',
-                    margin: '8px 0',
+                    margin: '8pt 0',
                   }}
                 />
 
