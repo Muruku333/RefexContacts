@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom';
 
 import { Box, Stack } from '@mui/material';
 
-import Iconify from 'src/components/iconify';
 import { Web, Email, Whatsapp } from 'src/components/icons';
 
 const authToken =
@@ -86,7 +85,7 @@ export default function RefexMobility() {
               }}
             >
               {/* Branch address - positioned at bottom inside the rectangle */}
-              <Box
+              {/* <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -112,6 +111,18 @@ export default function RefexMobility() {
                 >
                   {employee.branch.branch_address}
                 </Box>
+              </Box> */}
+              <Box
+                sx={{
+                  fontWeight: 600,
+                  color: '#F4553B',
+                  textAlign: 'center',
+                  fontSize: '5px',
+                  marginBottom: '6px',
+                  // flexGrow: 1,
+                }}
+              >
+                Chennai | Bengaluru | Hyderabad | Mumbai | Delhi
               </Box>
               {/* <Box
                 sx={{
