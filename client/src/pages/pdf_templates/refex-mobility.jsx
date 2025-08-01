@@ -122,7 +122,7 @@ export default function RefexMobility() {
                   // flexGrow: 1,
                 }}
               >
-                Chennai | Bengaluru | Hyderabad | Mumbai | Delhi
+                Chennai | Bengaluru | Hyderabad | Mumbai | Delhi NCR
               </Box>
               {/* <Box
                 sx={{
